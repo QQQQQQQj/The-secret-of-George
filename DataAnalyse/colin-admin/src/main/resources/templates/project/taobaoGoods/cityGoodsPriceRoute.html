@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('每个城市的商品均价分析')"/>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>每个城市的商品均价分析</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="echarts" style="height: 400px" id="analyseOne"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+</div>
+<th:block th:include="include :: footer"/>
+<th:block th:include="include :: echarts-js"/>
+<script type="text/javascript">
+    var prefix = ctx + "project/taobaoGoodsAnalyse";
+    $(function () {
+        getData()
+    });
+
+    function getData() {
+        $.get(prefix + "/cityGoodsPrice", function (result) {
+            var scatterChart = echarts.init(document.getElementById("analyseOne"));
+            if (result.code == web_status.SUCCESS) {
+                var scatteroption = {
+                    tooltip : {
+                        trigger: 'axis',
+                        showDelay : 0,
+                        axisPointer: {
+                            type : 'cross',
+                            lineStyle: {
+                                type : 'dashed',
+                                width : 1
+                            }
+                        }
+                    },
+                    grid: {
+                        x: 60,
+                        x2: 60,
+                        y2: 40
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: [],
+                        axisLabel: {
+                            rotate: 45,
+                            formatter: function(value) {
+                                if (value.length > 6) {
+                                    return value.substring(0, 6) + '...';
+                                } else {
+                                    return value;
+                                }
+                            }
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: '#333'
+                            }
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLine: {
+                            lineStyle: {
+                                color: '#333'
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed',
+                                color: '#ccc'
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            type: 'scatter',
+                            data: [],
+                            symbol: 'circle',        // 散点形状，可选'circle','rect','roundRect','triangle','diamond','pin','arrow'
+                            symbolSize: 10,          // 散点大小
+                            itemStyle: {
+                                color: '#5470C6',    // 散点颜色
+                                borderColor: '#333', // 散点描边色
+                                borderWidth: 1
+                            },
+                            emphasis: {
+                                focus: 'series',
+                                label: {
+                                    show: true,
+                                    formatter: function (param) {
+                                        return 'Value: ' + param.value;
+                                    },
+                                    position: 'top',
+                                    color: '#000'
+                                },
+                                itemStyle: {
+                                    color: '#EE6666'  // 鼠标悬浮时散点变色
+                                }
+                            },
+                            markPoint: {
+                                data: [
+                                    {type: 'max', name: 'Max', symbolSize: 50},
+                                    {type: 'min', name: 'Min', symbolSize: 40}
+                                ],
+                                label: {
+                                    show: true,
+                                    formatter: '{b}: {c}',
+                                    color: '#fff'
+                                },
+                                itemStyle: {
+                                    color: '#E91E63'
+                                }
+                            },
+                            markLine: {
+                                data: [
+                                    {type: 'average', name: 'Average'}
+                                ],
+                                lineStyle: {
+                                    type: 'dashed',
+                                    color: '#FF5722'
+                                },
+                                label: {
+                                    show: true,
+                                    formatter: '{b}: {c}'
+                                }
+                            }
+                        }
+                    ]
+                };
+                for (let i = 0; i < result.data.length; i++) {
+                    scatteroption.xAxis.data.push(result.data[i].city)
+                    scatteroption.series[0].data.push(result.data[i].avg_price)
+                }
+
+                scatterChart.setOption(scatteroption);
+                $(window).resize(scatterChart.resize);
+            }else {
+                console.log(result)
+            }
+
+        });
+
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colin.system.mapper.project.TaobaoGoodsAnalyseMapper">
+
+    <select id="categoryGoodsPrice" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_category_goods_price
+        order by avg_price desc
+    </select>
+
+    <select id="categoryGoodsSales" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_category_goods_sales
+        order by total_sales
+    </select>
+
+    <select id="categoryShopGoodsPrice" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_category_shop_goods_price
+            <where>
+                <if test="goodsCategory != null and goodsCategory != ''">
+                    AND goods_category = #{goodsCategory}
+                </if>
+            </where>
+        order by avg_price desc
+    </select>
+
+    <select id="cityGoodsPrice" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_city_goods_price
+        order by avg_price desc
+    </select>
+
+    <select id="cityGoodsSales" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_city_goods_sales order by total_sales desc
+    </select>
+
+    <select id="provinceGoodsSales" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_province_goods_sales order by total_sales desc
+    </select>
+
+    <select id="provincePostfreeRate" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_province_postfree_rate order by postfree_rate desc
+    </select>
+
+    <select id="shopGoodsSales" resultType="com.alibaba.fastjson.JSONObject">
+        select * from ads_taobao_shop_goods_sales order by total_sales desc
+    </select>
+
+    <select id="taobaoGoodsSales" resultType="com.alibaba.fastjson.JSONObject">
+        select * from t_taobao_goods_sales
+        <where>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="shopName != null and shopName != ''">
+                AND name like concat('%',#{shopName},'%')
+            </if>
+            <if test="province != null and province != ''">
+                AND province = #{province}
+            </if>
+        </where>
+        order by id
+    </select>
+
+    <select id="shopGmv" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT `NAME` as shop_name,
+               SUM( deal * price ) as gmv
+        FROM
+            t_taobao_goods_sales
+            where `NAME` != 'INTO YOU旗舰店'
+        GROUP BY
+            shop_name
+        ORDER BY gmv DESC
+        limit 30
+    </select>
+
+    <select id="cityGmv" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT city,
+               SUM( deal * price ) as gmv
+        FROM
+            t_taobao_goods_sales
+        GROUP BY
+            city
+        ORDER BY gmv DESC
+        limit 30
+    </select>
+</mapper>

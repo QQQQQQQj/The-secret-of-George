@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('淘宝商品销售数据列表')" />
+</head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 search-collapse">
+            <form id="formId">
+                <div class="select-list">
+                    <ul>
+                        <li>
+                            <label>商品类型：</label>
+                            <input type="text"  placeholder="请输入商品类型" name="type"/>
+                        </li>
+                        <li>
+                            <label>店铺名称：</label>
+                            <input type="text" placeholder="请输入店铺名称" name="shopName"/>
+                        </li>
+                        <li>
+                            <label>省份：</label>
+                            <input type="text"  placeholder="请输入省份" name="province"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-table"></table>
+        </div>
+    </div>
+</div>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var prefix = ctx + "project/taobaoGoodsAnalyse";
+
+    $(function() {
+        var options = {
+            url: prefix + "/list",
+            modalName: "淘宝商品销售数据",
+            showExport:false,
+            columns: [
+                {
+                    field: 'type',
+                    title: '商品类型'
+                },
+                {
+                    field: 'title',
+                    title: '商品标题',
+                    formatter: function(value, row, index) {
+                        return '<a href="' + row.href+ '" target="_blank">' + row.title + '</a>';
+                    }
+                },
+                {
+                    title: '商品图片',
+                    formatter: function(value, row, index) {
+                        return $.table.imageView(row.img_src);
+
+                    }
+                },
+                {
+                    field: 'price',
+                    title: '价格'
+                },
+                {
+                    field: 'deal',
+                    title: '销量'
+                },
+                {
+                    field: 'name',
+                    title: '店铺名称',
+                    formatter: function(value, row, index) {
+                        return '<a href="' + row.name_href+ '" target="_blank">' + row.name + '</a>';
+                    }
+                },
+                {
+                    field: 'province',
+                    title: '省份'
+                },
+                {
+                    field: 'city',
+                    title: '城市'
+                },
+                {
+                    field: 'isPostFree',
+                    title: '是否包邮'
+                },
+                ]
+        };
+        $.table.init(options);
+    });
+</script>
+</body>
+</html>

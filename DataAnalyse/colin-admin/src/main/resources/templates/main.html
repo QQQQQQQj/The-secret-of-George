@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>淘宝商品销售数据分析</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="../static/css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link href="../static/css/font-awesome.min.css" th:href="@{/css/font-awesome.min.css}" rel="stylesheet"/>
+    <link href="../static/css/style.min.css" th:href="@{/css/style.min.css}" rel="stylesheet"/>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <h3>总的销量</h3>
+                    <h2 id="sparkline1Content"></h2>
+                    <div id="sparkline1" style="font-size: 20px;">461897553</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <h3>GMV</h3>
+                    <h2 id="sparkline2Content"></h2>
+                    <div id="sparkline2" style="font-size: 20px;">169056865411.94</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title"><h5>店铺的销售额排名</h5></div>
+                <div class="ibox-content"><div class="echarts" id="analyseOne" style="height: 400px;"></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title"><h5>城市的销售额排名</h5></div>
+                <div class="ibox-content"><div class="echarts" id="analyseTwo" style="height: 400px;"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/ajax/libs/layer/layer.min.js}"></script>
+<th:block th:include="include :: footer"/>
+<th:block th:include="include :: echarts-js"/>
+
+<script type="text/javascript">
+var prefix = ctx + "project/taobaoGoodsAnalyse";
+
+$('#pay-qrcode').click(function () {
+    var html = $(this).html();
+    parent.layer.open({ title: false, type: 1, closeBtn: false, shadeClose: true, area: ['600px', '360px'], content: html });
+});
+
+function getData() {
+    $.get(prefix + "/shopGmv", function (result) {
+        var lineChart = echarts.init(document.getElementById("analyseOne"));
+        if (result.code == web_status.SUCCESS) {
+            var lineoption = {
+                tooltip: { trigger: 'axis', axisPointer: { type: 'cross', label: { backgroundColor: '#6a7985' } } },
+                legend: { data: ['GMV'], top: '5%' },
+                grid: { left: '5%', right: '10%', bottom: '10%', containLabel: true },
+                xAxis: [{ type: 'category', boundaryGap: true, data: [], axisLabel: { rotate: 45, formatter: function(v){ return v.length>6?v.substring(0,6)+'...':v; } }, axisLine: { lineStyle: { color: '#111111' } } }],
+                yAxis: [{ type: 'value', name: 'GMV', nameTextStyle: { color: '#333' }, axisLine: { lineStyle: { color: '#ccc' } }, axisLabel: { color: '#333' }, splitLine: { lineStyle: { type: 'dashed', color: '#ddd' } } }],
+                series: [{ name: 'GMV', type: 'line', data: [], symbol: 'circle', symbolSize: 6, lineStyle: { color: '#e8075f', width: 2 }, itemStyle: { color: '#e8075f' }, emphasis: { focus: 'series' } }]
+            };
+            for (let i = 0; i < result.data.length; i++) {
+                lineoption.xAxis[0].data.push(result.data[i].shop_name);
+                lineoption.series[0].data.push(result.data[i].gmv);
+            }
+            lineChart.setOption(lineoption);
+            $(window).resize(lineChart.resize);
+        }
+    });
+
+    $.get(prefix + "/cityGmv", function (result) {
+        var lineChart = echarts.init(document.getElementById("analyseTwo"));
+        if (result.code == web_status.SUCCESS) {
+            var lineoption = {
+                tooltip: { trigger: 'axis', axisPointer: { type: 'cross', label: { backgroundColor: '#6a7985' } } },
+                legend: { data: ['GMV'], top: '5%' },
+                grid: { left: '5%', right: '10%', bottom: '10%', containLabel: true },
+                xAxis: [{ type: 'category', boundaryGap: false, data: [], axisLabel: { rotate: 45, formatter: function(v){ return v.length>6?v.substring(0,6)+'...':v; } }, axisLine: { lineStyle: { color: '#111111' } } }],
+                yAxis: [{ type: 'value', name: 'GMV', nameTextStyle: { color: '#333' }, axisLine: { lineStyle: { color: '#ccc' } }, axisLabel: { color: '#333' }, splitLine: { lineStyle: { type: 'dashed', color: '#ddd' } } }],
+                series: [{
+                    name: 'GMV', type: 'line', stack: '总量', data: [], symbol: 'circle', symbolSize: 6,
+                    lineStyle: { color: '#9de807', width: 2 }, itemStyle: { color: '#9de807' },
+                    areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: '#9de807' }, { offset: 1, color: 'rgba(7,232,86,0.1)' }], global: false } },
+                    emphasis: { focus: 'series' }
+                }]
+            };
+            for (let i = 0; i < result.data.length; i++) {
+                lineoption.xAxis[0].data.push(result.data[i].city);
+                lineoption.series[0].data.push(result.data[i].gmv);
+            }
+            lineChart.setOption(lineoption);
+            $(window).resize(lineChart.resize);
+        }
+    });
+}
+
+$(function () {
+    getData();
+});
+</script>
+</body>
+</html>

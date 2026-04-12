@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器学习预测中心</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/font-awesome.min.css}" rel="stylesheet"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0c1426 0%, #1a2a4a 50%, #0d1b2e 100%);
+            color: #fff; font-family: 'Microsoft YaHei', sans-serif; min-height: 100vh;
+        }
+        .header {
+            background: rgba(0,40,80,0.8); padding: 20px; text-align: center;
+            border-bottom: 2px solid #00d4ff; position: relative;
+        }
+        .header h1 { font-size: 28px; background: linear-gradient(90deg, #00d4ff, #7b2ff7, #00d4ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s infinite; }
+        @keyframes shine { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+
+        .toolbar { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; padding: 0 20px; }
+        .btn-ml {
+            padding: 10px 24px; border: none; border-radius: 25px; cursor: pointer;
+            font-size: 14px; font-weight: bold; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .btn-sales { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+        .btn-price { background: linear-gradient(135deg, #f093fb, #f5576c); color: #fff; }
+        .btn-gmv { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #fff; }
+        .btn-heat { background: linear-gradient(135deg, #fa709a, #fee140); color: #333; }
+        .btn-region { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #333; }
+        .btn-trend { background: linear-gradient(135deg, #fa8bff, #2bd2ff); color: #fff; }
+        .btn-all { background: linear-gradient(135deg, #ff0844, #ffb199); color: #fff; }
+        .btn-ml:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,212,255,0.4); }
+        .btn-ml.active { box-shadow: 0 0 20px rgba(255,255,255,0.5); transform: scale(1.05); }
+
+        .status-bar { text-align: center; padding: 10px; font-size: 14px; }
+        .status-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; animation: pulse 2s infinite; }
+        .status-online { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .status-offline { background: #ff4444; box-shadow: 0 0 10px #ff4444; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; padding: 20px; max-width: 1800px; margin: 0 auto; }
+        .card {
+            background: rgba(13,27,46,0.9); border-radius: 16px; border: 1px solid rgba(0,212,255,0.2);
+            padding: 24px; backdrop-filter: blur(10px); transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, #00d4ff, transparent); animation: scan 3s infinite; }
+        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+        .card:hover { border-color: rgba(0,212,255,0.5); transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,212,255,0.15); }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
+        .card-title .icon { font-size: 24px; }
+        .chart-container { width: 100%; height: 350px; }
+
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .metric-item { background: rgba(0,212,255,0.08); border-radius: 12px; padding: 14px; text-align: center; border: 1px solid rgba(0,212,255,0.15); }
+        .metric-value { font-size: 22px; font-weight: bold; color: #00d4ff; }
+        .metric-label { font-size: 12px; color: #8899aa; margin-top: 4px; }
+
+        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(13,27,46,0.95); display: none; justify-content: center; align-items: center; z-index: 100; border-radius: 16px; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(0,212,255,0.2); border-top-color: #00d4ff;
+            border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .table-wrapper { overflow-x: auto; max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: rgba(0,212,255,0.15); padding: 10px 8px; text-align: left; color: #00d4ff; position: sticky; top: 0; }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr:hover td { background: rgba(0,212,255,0.05); }
+        .tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        .tag-high { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .tag-medium { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .tag-low { background: rgba(255,68,68,0.2); color: #ff4444; }
+
+        .insight-box { background: rgba(123,47,247,0.1); border-left: 3px solid #7b2ff7; padding: 12px 16px;
+            margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.6; }
+        .insight-title { color: #7b2ff7; font-weight: bold; margin-bottom: 6px; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>&#x1F916; 机器学习预测分析中心</h1>
+    <div style="margin-top:8px;color:#8899aa;font-size:14px;">基于 Prophet / XGBoost / Random Forest / 聚类算法 的智能预测系统</div>
+</div>
+
+<div class="status-bar" id="serviceStatus">
+    <span class="status-dot status-offline" id="statusDot"></span>
+    <span id="statusText">正在检测ML服务状态...</span>
+</div>
+
+<div class="toolbar">
+    <button class="btn-ml btn-all active" onclick="runAllPredictions()">&#x1F680; 一键全部预测</button>
+    <button class="btn-ml btn-sales" onclick="runPrediction('sales')">&#x1F4C8; 时序销量预测</button>
+    <button class="btn-ml btn-price" onclick="runPrediction('price')">&#x1F4B0; 价格弹性分析</button>
+    <button class="btn-ml btn-gmv" onclick="runPrediction('gmv')">&#x1F3EA; 店铺GMV预测</button>
+    <button class="btn-ml btn-heat" onclick="runPrediction('heat')">&#x1F525; 商品热度预测</button>
+    <button class="btn-ml btn-region" onclick="runPrediction('region')">&#x1F5FA; 地区销量预测</button>
+    <button class="btn-ml btn-trend" onclick="runPrediction('trend')">&#x1F4CA; 品类趋势预测</button>
+</div>
+
+<div class="dashboard" id="dashboard">
+    <div class="card" id="salesCard" style="grid-column: span 2;">
+        <div class="card-title"><span class="icon">&#x1F4C8;</span>时序销量/销售额预测 (Prophet)</div>
+        <div class="metrics-row" id="salesMetrics"></div>
+        <div class="chart-container" id="salesChart"></div>
+        <div class="insight-box" id="salesInsight"></div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <div class="card" id="priceCard">
+        <div class="card-title"><span class="icon">&#x1F4B0;</span>价格-销量弹性分析</div>
+        <div class="metrics-row" id="priceMetrics"></div>
+        <div class="chart-container" id="priceChart"></div>
+        <div class="table-wrapper" id="priceTable"></div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <div class="card" id="gmvCard">
+        <div class="card-title"><span class="icon">&#x1F3EA;</span>店铺GMV潜力评估 (XGBoost)</div>
+        <div class="metrics-row" id="gmvMetrics"></div>
+        <div class="chart-container" id="gmvChart"></div>
+        <div class="table-wrapper" id="gmvTable"></div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <div class="card" id="heatCard">
+        <div class="card-title"><span class="icon">&#x1F525;</span>商品热度预测 (Random Forest)</div>
+        <div class="metrics-row" id="heatMetrics"></div>
+        <div class="chart-container" id="heatChart"></div>
+        <div class="table-wrapper" id="heatTable"></div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <div class="card" id="regionCard" style="grid-column: span 2;">
+        <div class="card-title"><span class="icon">&#x1F5FA;</span>地区销量分布与潜力预测 (聚类)</div>
+        <div class="metrics-row" id="regionMetrics"></div>
+        <div style="display:flex;gap:20px;">
+            <div class="chart-container" id="regionChart" style="flex:1;"></div>
+            <div class="chart-container" id="regionBarChart" style="flex:1;"></div>
+        </div>
+        <div class="table-wrapper" id="regionTable"></div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <div class="card" id="trendCard" style="grid-column: span 2;">
+        <div class="card-title"><span class="icon">&#x1F4CA;</span>品类销量趋势预测 (未来12个月)</div>
+        <div class="metrics-row" id="trendMetrics"></div>
+        <div class="chart-container" id="trendChart"></div>
+        <div class="table-wrapper" id="trendTable"></div>
+        <div class="insight-box" id="trendInsight"></div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+</div>
+
+<script th:inline="javascript">/*<![CDATA[*/
+var ctx = [[@{/}]];
+/*]]>*/</script>
+<script th:src="@{/js/jquery.min.js?v=3.6.0}"></script>
+<script th:src="@{/js/bootstrap.min.js?v=3.3.7}"></script>
+<script th:src="@{/ajax/libs/layer/layer.min.js?v=3.5.1}"></script>
+<script th:src="@{/ajax/libs/report/echarts/echarts-all.min-new.js?v=5.4.2}"></script>
+<script th:inline="none">/*<![CDATA[*/
+var prefix = ctx + "project/mlPrediction";
+var charts = {};
+
+$(function() {
+    console.log('[ML-DEBUG] JS开始执行, ctx=' + ctx + ', prefix=' + prefix);
+    checkServiceStatus();
+    initCharts();
+});
+
+function checkServiceStatus() {
+    console.log('[ML-DEBUG] 开始检测ML服务状态, URL=' + prefix + "/serviceStatus");
+    $.get({url: prefix + "/serviceStatus", timeout: 10000}).done(function(res) {
+        console.log('[ML-DEBUG] serviceStatus响应:', JSON.stringify(res));
+        if (res.code == 0 && res.data && res.data.status === 'running') {
+            $('#statusDot').removeClass('status-offline').addClass('status-online');
+            $('#statusText').text('\u2705 ML服务运行正常 - ' + res.data.version + ' | API文档: ' + window.location.origin.replace(':6002',':6003') + '/docs');
+            console.log('[ML-DEBUG] ML服务在线!');
+        } else {
+            $('#statusText').html('\u26A0\uFE0F ML服务未启动 | 请执行: &lt;code style=&quot;background:#333;padding:2px 8px;border-radius:4px;&quot;&gt;cd ml_service &amp;amp;&amp;amp; pip install -r requirements.txt &amp;amp;&amp;amp; python main.py&lt;/code&gt;');
+            console.log('[ML-DEBUG] ML服务离线或异常');
+        }
+    }).fail(function(xhr, status, error) {
+        console.error('[ML-DEBUG] serviceStatus请求失败! status=' + status + ', error=' + error);
+        $('#statusText').text('\u274C 无法连接ML服务，请先启动Python ML服务(端口6003)');
+    });
+}
+
+function initCharts() {
+    console.log('[ML-DEBUG] 初始化ECharts图表...');
+    charts.sales = echarts.init(document.getElementById('salesChart'));
+    charts.price = echarts.init(document.getElementById('priceChart'));
+    charts.gmv = echarts.init(document.getElementById('gmvChart'));
+    charts.heat = echarts.init(document.getElementById('heatChart'));
+    charts.region = echarts.init(document.getElementById('regionChart'));
+    charts.regionBar = echarts.init(document.getElementById('regionBarChart'));
+    charts.trend = echarts.init(document.getElementById('trendChart'));
+    console.log('[ML-DEBUG] ECharts初始化完成, 共' + Object.keys(charts).length + '个图表');
+
+    window.addEventListener('resize', function() {
+        Object.values(charts).forEach(function(c) { if(c) c.resize(); });
+    });
+
+    showEmptyState();
+}
+
+function showEmptyState() {
+    var emptyOption = {
+        title: { text: '\u70B9\u51FB\u4E0A\u65B9\u6309\u94AE\u5F00\u59CB\u9884\u6D4B', left: 'center', top: 'center',
+                 textStyle: {color:'#556677',fontSize:16,fontWeight:'normal'} },
+        xAxis: { show:false }, yAxis: { show:false }, series: []
+    };
+    var chartKeys = Object.keys(charts);
+    for (var i = 0; i < chartKeys.length; i++) {
+        charts[chartKeys[i]].setOption(emptyOption, true);
+    }
+}
+
+function runAllPredictions() {
+    $('.btn-ml').removeClass('active'); $('.btn-all').addClass('active');
+    showLoading(true);
+    $.get(prefix + "/runAll?salesDays=30", function(res) {
+        if (res.code == 0) {
+            var data = res.data.predictions;
+            if (data.sales_forecast && data.sales_forecast.data) renderSalesForecast(data.sales_forecast.data);
+            if (data.price_elasticity && data.price_elasticity.data) renderPriceElasticity(data.price_elasticity.data);
+            if (data.shop_gmv && data.shop_gmv.data) renderShopGmv(data.shop_gmv.data);
+            if (data.product_heat && data.product_heat.data) renderProductHeat(data.product_heat.data);
+            if (data.province_sales && data.province_sales.data) renderRegionSales(data.province_sales.data);
+            if (data.category_trend && data.category_trend.data) renderCategoryTrend(data.category_trend.data);
+
+            var summary = res.data.summary;
+            showToast('\u2705 \u5168\u90E8 ' + summary.total_models + ' \u4E2A\u6A21\u578B\u9884\u6D4B\u5B8C\u6210\uFF01\u6210\u529F ' + summary.successful + ' \u4E2A\uFF0C\u8017\u65F6 ' + summary.total_execution_time + 's');
+        } else {
+            showToast('\u274C \u9884\u6D4B\u5931\u8D25: ' + res.msg);
+        }
+        showLoading(false);
+    }).fail(function() { showLoading(false); showToast('\u274C \u8BF7\u6C42\u5931\u8D25\uFF0C\u8BF7\u68C0\u67E5ML\u670D\u52A1\u662F\u5426\u542F\u52A8'); });
+}
+
+function runPrediction(type) {
+    $('.btn-ml').removeClass('active');
+    if (type === 'sales') { $('.btn-sales').addClass('active'); loadSales(); }
+    else if (type === 'price') { $('.btn-price').addClass('active'); loadPrice(); }
+    else if (type === 'gmv') { $('.btn-gmv').addClass('active'); loadGmv(); }
+    else if (type === 'heat') { $('.btn-heat').addClass('active'); loadHeat(); }
+    else if (type === 'region') { $('.btn-region').addClass('active'); loadRegion(); }
+    else if (type === 'trend') { $('.btn-trend').addClass('active'); loadTrend(); }
+}
+
+function loadSales() { showCardLoading('salesCard'); $.get(prefix+"/salesForecast?days=30", function(res){ if(res.code==0)renderSalesForecast(res.data);showCardLoading('salesCard',false); }); }
+function loadPrice() { showCardLoading('priceCard'); $.get(prefix+"/priceElasticity", function(res){ if(res.code==0)renderPriceElasticity(res.data);showCardLoading('priceCard',false); }); }
+function loadGmv() { showCardLoading('gmvCard'); $.get(prefix+"/shopGmv", function(res){ if(res.code==0)renderShopGmv(res.data);showCardLoading('gmvCard',false); }); }
+function loadHeat() { showCardLoading('heatCard'); $.get(prefix+"/productHeat", function(res){ if(res.code==0)renderProductHeat(res.data);showCardLoading('heatCard',false); }); }
+function loadRegion() { showCardLoading('regionCard'); $.get(prefix+"/provinceSales", function(res){ if(res.code==0)renderRegionSales(res.data);showCardLoading('regionCard',false); }); }
+function loadTrend() { showCardLoading('trendCard'); $.get(prefix+"/categoryTrend?futurePeriods=12", function(res){ if(res.code==0)renderCategoryTrend(res.data);showCardLoading('trendCard',false); }); }
+
+function showCardLoading(cardId, show) { if(show === undefined) show = true; $('#'+cardId+' .loading-overlay').css('display', show?'flex':'none'); }
+function showLoading(show) { if(show === undefined) show = true; if(show) $('.loading-overlay').css('display','flex'); else $('.loading-overlay').css('display','none'); }
+function showToast(msg) { $('#statusText').html(msg); setTimeout(function(){checkServiceStatus();},5000); }
+
+function renderSalesForecast(data) {
+    var history = data.history || [];
+    var prediction = data.prediction || [];
+    var components = data.components || {};
+    var accuracy = data.model_accuracy || {};
+
+    var dates = [];
+    for (var h = 0; h < history.length; h++) dates.push(history[h].date);
+    for (var p = 0; p < prediction.length; p++) dates.push(prediction[p].date);
+
+    var actualSales = [];
+    for (var s = 0; s < history.length; s++) actualSales.push(history[s].sales_count/10000000);
+
+    var predSales = [];
+    for (var pad = 0; pad < history.length; pad++) predSales.push(null);
+    for (var pp = 0; pp < prediction.length; pp++) predSales.push(prediction[pp].predicted_sales/10000000);
+
+    var upperBound = [];
+    for (var ub = 0; ub < history.length; ub++) upperBound.push(null);
+    for (var ubp = 0; ubp < prediction.length; ubp++) upperBound.push(prediction[ubp].upper_bound/10000000);
+
+    var lowerBound = [];
+    for (var lb = 0; lb < history.length; lb++) lowerBound.push(null);
+    for (var lbp = 0; lbp < prediction.length; lbp++) lowerBound.push(prediction[lbp].lower_bound/10000010);
+
+    var trendDir = components.trend || '-';
+    var trendColor = trendDir === '\u4E0A\u5347' ? '#00ff88' : '#ff4444';
+
+    $('#salesMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(accuracy.mape||0)+'%</div><div class="metric-label">MAPE\u8BEF\u5DEE</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(accuracy.r2||0)+'</div><div class="metric-label">R\u00B2\u5F97\u5206</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+prediction.length+'</div><div class="metric-label">\u9884\u6D4B\u5929\u6570</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="color:'+trendColor+'">'+trendDir+'</div><div class="metric-label">\u8D8B\u52BF\u65B9\u5411</div></div>'
+    );
+
+    var trendText = trendDir === '\u4E0A\u5347' ? '\u1F4C8 \u9500\u91CF\u5448\u4E0A\u5347\u8D8B\u52BF\uFF0C\u9884\u8BA1\u672A\u6765\u589E\u957F\u7EA6 ' + (Math.abs(components.growth_rate)||0) + '%' : '\u1F4C9 \u9500\u91CF\u8D8B\u4E8E\u5E73\u7A33\u6216\u4E0B\u964D\uFF0C\u5EFA\u8BAE\u5173\u6CE8\u4FC3\u9500\u7B56\u7565';
+    $('#salesInsight').html('<div class="insight-title">\u1F916 AI\u6D1E\u5BDF</div>' + trendText);
+
+    charts.sales.setOption({
+        tooltip: { trigger:'axis', backgroundColor:'rgba(13,27,46,0.95)', borderColor:'#00d4ff', textStyle:{color:'#fff'} },
+        legend: { data:['\u5B9E\u9645\u9500\u91CF','\u9884\u6D4B\u9500\u91CF','\u7F6E\u4FE1\u533A\u95F4'], textStyle:{color:'#8899aa'}, top:0 },
+        grid: { left:'3%',right:'4%',bottom:'3%',top:'40px',containLabel:true },
+        xAxis: { type:'category', data:dates, axisLabel:{rotate:30,color:'#8899aa',fontSize:10}, axisLine:{lineStyle:{color:'#334455'}} },
+        yAxis: { type:'value', name:'\u9500\u91CF(\u5343\u4E07)', axisLabel:{color:'#8899aa'}, splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}} },
+        series: [
+            { name:'\u5B9E\u9645\u9500\u91CF', type:'line', data:actualSales, smooth:true, lineStyle:{width:3,color:'#00d4ff'}, itemStyle:{color:'#00d4ff'},
+              areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(0,212,255,0.3)'},{offset:1,color:'rgba(0,212,255,0)'}])} },
+            { name:'\u9884\u6D4B\u9500\u91CF', type:'line', data:predSales, smooth:true, lineStyle:{width:3,color:'#7b2ff7',type:'dashed'}, itemStyle:{color:'#7b2ff7'} },
+            { name:'\u7F6E\u4FE1\u533A\u95F4', type:'line', data:upperBound, lineStyle:{opacity:0}, areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(123,47,247,0.2)'},{offset:1,color:'rgba(123,47,247,0)'}])} },
+            { type:'line', data:lowerBound, lineStyle:{opacity:0}, areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(123,47,247,0)'},{offset:1,color:'rgba(123,47,247,0.2)'}])} }
+        ]
+    }, true);
+}
+
+function renderPriceElasticity(data) {
+    var analysis = data.price_analysis || [];
+    var metrics = data.model_metrics || {};
+    var insights = data.insights || {};
+
+    $('#priceMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(metrics.sales_r2||0)+'</div><div class="metric-label">\u9500\u91CER\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(metrics.amount_r2||0)+'</div><div class="metric-label">\u9500\u552E\u989DR\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:14px">'+(insights.best_price_range||'-')+'</div><div class="metric-label">\u6700\u4F18\u4EF7\u4F4D</div></div>'
+    );
+
+    var priceRanges = [];
+    var salesData = [];
+    var elasticityData = [];
+
+    for (var ai = 0; ai < analysis.length; ai++) {
+        priceRanges.push(analysis[ai].price_range);
+        salesData.push(analysis[ai].actual_sales/1000000);
+        elasticityData.push(Math.abs(analysis[ai].elasticity||0)*10);
+    }
+
+    charts.price.setOption({
+        tooltip: {trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#f5576c'},
+        legend: {data:['\u5B9E\u9645\u9500\u91CF(\u767E\u4E07)','|\u5F39\u6027\u7CFB\u6570|\xD710'],textStyle:{color:'#8899aa'},top:0},
+        grid:{left:'3%',right:'8%',bottom:'3%',top:'40px',containLabel:true},
+        xAxis:{type:'category',data:priceRanges,axisLabel:{color:'#8899aa',fontSize:10,rotate:20}},
+        yAxis:[
+            {type:'value',name:'\u9500\u91CF(\u767E\u4E07)',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
+            {type:'value',name:'\u5F39\u6027\xD710',axisLabel:{color:'#8899aa'},splitLine:{show:false}}
+        ],
+        series:[
+            {name:'\u5B9E\u9645\u9500\u91CF(\u767E\u4E07)',type:'bar',data:salesData,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#f093fb'},{offset:1,color:'#f5576c'}])},barWidth:'40%'},
+            {name:'|\u5F39\u6027\u7CFB\u6570|\xD710',type:'line',yAxisIndex:1,data:elasticityData,lineStyle:{color:'#fee140',width:3},itemStyle:{color:'#fee140'}}
+        ]
+    }, true);
+
+    var tableHtml = '<table><tr><th>\u4EF7\u683C\u533A\u95F4</th><th>\u4E2D\u95F4\u4EF7</th><th>\u5B9E\u9645\u9500\u91CF</th><th>\u5F39\u6027\u7CFB\u6570</th><th>\u7C7B\u578B</th><th>\u5EFA\u8BAE</th></tr>';
+    for (var ri = 0; ri < Math.min(analysis.length, 20); ri++) {
+        var a = analysis[ri];
+        var tagClass = Math.abs(a.elasticity) > 1 ? 'tag-high' : 'tag-medium';
+        tableHtml += '<tr><td>'+a.price_range+'</td><td>\u00A5'+a.mid_price+'</td><td>'+(a.actual_sales/1000000).toFixed(1)+'M</td>'+
+            '<td>'+(a.elasticity||0).toFixed(2)+'</td>'+
+            '<td><span class="tag '+tagClass+'">'+(a.elasticity_type||'-')+'</span></td>'+
+            '<td style="font-size:11px;">'+(a.suggestion||'-')+'</td></tr>';
+    }
+    tableHtml += '</table>';
+    $('#priceTable').html(tableHtml);
+}
+
+function renderShopGmv(data) {
+    var predictions = data.shop_predictions || [];
+    var metrics = data.model_metrics || {};
+    var insights = data.insights || {};
+
+    $('#gmvMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(metrics.cv_r2_mean||0)+'</div><div class="metric-label">\u4EA4\u53C9\u9A8C\u8BC1R\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(insights.total_shops_analyzed||0)+'</div><div class="metric-label">\u5206\u6790\u5E97\u94FA\u6570</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:14px">'+(insights.key_driver||'-')+'</div><div class="metric-label">\u6838\u5FC3\u9A71\u52A8\u56E0\u7D20</div></div>'
+    );
+
+    var top10 = predictions.slice(0, 15);
+    var shopNames = [];
+    var gmvScores = [];
+
+    for (var ti = 0; ti < top10.length; ti++) {
+        shopNames.push(top10[ti].shop_name.substring(0,12)+'...');
+        gmvScores.push({value:top10[ti].potential_score,
+            itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:ti<3?'#4facfe':'#43e97b'},{offset:1,color:ti<3?'#00f2fe':'#38f9d7'}])}});
+    }
+
+    charts.gmv.setOption({
+        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#00f2fe',
+            formatter:function(params){
+                var d = top10[params[0].dataIndex];
+                if(!d) return '';
+                return d.shop_name+'<br/>\u5B9E\u9645GMV: \u00A5'+d.actual_gmv.toLocaleString()+'<br/>\u6F5C\u529B\u8BC4\u5206: '+d.potential_score+'<br/>\u7B49\u7EA7: '+d.potential_level;
+            }},
+        grid:{left:'3%',right:'15%',bottom:'3%',top:'10px',containLabel:true},
+        xAxis:{type:'value',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
+        yAxis:{type:'category',data:shopNames,axisLabel:{color:'#8899aa',fontSize:10}},
+        series:[{
+            type:'bar',data:gmvScores,barWidth:'60%',label:{show:true,position:'right',color:'#00f2fe',fontSize:11}
+        }]
+    }, true);
+
+    var tableHtml = '<table><tr><th>\u5E97\u94FA\u540D\u79F0</th><th>\u5B9E\u9645GMV</th><th>\u9884\u6D4BGMV</th><th>\u6F5C\u529B\u5206</th><th>\u7B49\u7EA7</th><th>\u5EFA\u8BAE</th></tr>';
+    for (var gi = 0; gi < Math.min(predictions.length, 10); gi++) {
+        var p = predictions[gi];
+        tableHtml += '<tr><td>'+p.shop_name+'</td><td>\u00A5'+p.actual_gmv.toLocaleString()+'</td><td>\u00A5'+p.predicted_gmv.toLocaleString()+'</td>'+
+            '<td><b style="color:#00f2fe">'+p.potential_score+'</b></td>'+
+            '<td><span class="tag tag-high">'+p.potential_level.split(' ')[0]+'</span></td>'+
+            '<td style="font-size:11px;">'+p.recommendation+'</td></tr>';
+    }
+    tableHtml += '</table>';
+    $('#gmvTable').html(tableHtml);
+}
+
+function renderProductHeat(data) {
+    var predictions = data.product_predictions || [];
+    var metrics = data.model_metrics || {};
+    var insights = data.insights || {};
+
+    $('#heatMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(metrics.cv_r2_mean||0)+'</div><div class="metric-label">CVR\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(metrics.products_analyzed||0)+'</div><div class="metric-label">\u5546\u54C1\u6570\u91CF</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(insights.avg_heat_score||0)+'</div><div class="metric-label">\u5E73\u5747\u70ED\u5EA6</div></div>'
+    );
+
+    var sorted = predictions.slice().sort(function(a,b){return b.heat_score-a.heat_score});
+    var heatCategories = [];
+    var heatValues = [];
+
+    for (var hi = 0; hi < Math.min(sorted.length, 15); hi++) {
+        heatCategories.push(sorted[hi].title.substring(0,15)+'...');
+        var hs = sorted[hi].heat_score;
+        var ci = hs >= 80 ? 0 : hs >= 65 ? 1 : hs >= 50 ? 2 : hs >= 35 ? 3 : 4;
+        var colors = [['#ff0844','#ffb199'],['#fa709a','#fee140'],['#43e97b','#38f9d7'],['#4facfe','#00f2fe'],['#667eea','#764ba2']];
+        heatValues.push({value:hs, itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:colors[ci][0]},{offset:1,color:colors[ci][1]}])}});
+    }
+
+    charts.heat.setOption({
+        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#fa7099'},
+        grid:{left:'3%',right:'4%',bottom:'3%',top:'10px',containLabel:true},
+        xAxis:{type:'category',data:heatCategories,axisLabel:{color:'#8899aa',fontSize:9,rotate:25,interval:0}},
+        yAxis:{type:'value',name:'\u70ED\u5EA6\u5206\u6570',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
+        series:[{type:'bar',data:heatValues,barWidth:'50%'}]
+    }, true);
+
+    var tableHtml = '<table><tr><th>\u5546\u54C1\u6807\u9898</th><th>\u70ED\u5EA6</th><th>\u7B49\u7EA7</th><th>\u54C1\u724C\u5206</th><th>\u4F18\u5316\u5EFA\u8BAE</th></tr>';
+    for (var hti = 0; hti < Math.min(predictions.length, 10); hti++) {
+        var hp = predictions[hti];
+        tableHtml += '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">'+hp.title+'</td>'+
+            '<td><b style="color:#fa709a">'+hp.heat_score+'</b></td>'+
+            '<td>'+hp.heat_level+'</td><td>'+hp.brand_score+'</td><td style="font-size:11px;">'+hp.optimization_suggestion+'</td></tr>';
+    }
+    tableHtml += '</table>';
+    $('#heatTable').html(tableHtml);
+}
+
+function renderRegionSales(data) {
+    var regions = data.region_predictions || [];
+    var clusterAnalysis = data.cluster_analysis || {};
+    var modelMetrics = data.model_metrics || {};
+
+    var clusterCount = 0;
+    if (clusterAnalysis.clusters) {
+        var ckeys = Object.keys(clusterAnalysis.clusters);
+        if (ckeys.length > 0) clusterCount = clusterAnalysis.clusters[ckeys[0]].cluster_count || 0;
+    }
+
+    $('#regionMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(modelMetrics.r2_score||0)+'</div><div class="metric-label>R\u00B2\u5F97\u5206</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(modelMetrics.provinces_analyzed||0)+'</div><div class="metric-label">\u7701\u4EFD\u603B\u6570</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:14px">'+clusterCount+'</div><div class="metric-label">\u805A\u7C7B\u5206\u7EC4</div></div>'
+    );
+
+    var sortedByPotential = regions.slice().sort(function(a,b){return b.potential_index-a.potential_index});
+    var clusterColors = {'\uD83D\uDD35 \u6F5C\u529B\u5E02\u573A':'#4facfe','\uD83D\uDFE2 \u6210\u719F\u5E02\u573A':'#43e97b','\uD83D\uDFE5 \u6210\u957F\u5E02\u573A':'#ffc107','\uD83D\uDD34 \u5F85\u5F00\u53D1':'#ff4444'};
+
+    var provinceList = [];
+    var scatterData = [];
+    for (var rsi = 0; rsi < regions.length; rsi++) {
+        provinceList.push(regions[rsi].province);
+        scatterData.push([rsi, regions[rsi].potential_index, regions[rsi].actual_sales, regions[rsi].cluster]);
+    }
+
+    charts.region.setOption({
+        tooltip:{trigger:'item',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#43e97b',
+            formatter:function(params){
+                var r = regions[params.dataIndex];
+                if(!r) return '';
+                return r.province+'<br/>\u5B9E\u9645\u9500\u91CF: '+r.actual_sales.toLocaleString()+'<br/>\u6F5C\u529B\u6307\u6570: '+r.potential_index;
+            }},
+        series:[{
+            type:'scatter',symbolSize:function(d){var r=regions[d]; return r ? Math.sqrt(r.actual_sales)/500+10 : 10;},
+            data:scatterData,
+            itemStyle:{color:function(params){
+                var cl = params.data && params.data[3];
+                return clusterColors[cl] || '#888';
+            }},
+            label:{show:true,formatter:function(params){var r=regions[params.dataIndex]; return r?r.province:'';},position:'top',fontSize:10,color:'#ccc'}
+        }],
+        xAxis:{type:'category',data:provinceList,axisLabel:{interval:0,rotate:45,color:'#8899aa',fontSize:9}},
+        yAxis:{type:'value',name:'\u6F5C\u529B\u6307\u6570',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}}
+    }, true);
+
+    var top15 = sortedByPotential.slice(0, 15);
+    var top15Names = [];
+    var top15Values = [];
+    for (var t15i = 0; t15i < top15.length; t15i++) {
+        top15Names.push(top15[t15i].province);
+        top15Values.push({value:top15[t15i].actual_sales/1000000,
+            itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#43e97b'},{offset:1,color:'#38f9d7'}])}});
+    }
+
+    charts.regionBar.setOption({
+        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#43e97b'},
+        grid:{left:'3%',right:'15%',bottom:'3%',top:'10px',containLabel:true},
+        xAxis:{type:'value',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
+        yAxis:{type:'category',data:top15Names,axisLabel:{color:'#8899aa',fontSize:10}},
+        series:[{type:'bar',data:top15Values,barWidth:'55%'}]
+    }, true);
+
+    var tableHtml = '<table><tr><th>\u7701\u4EFD</th><th>\u5B9E\u9645\u9500\u91CF</th><th>\u5E02\u573A\u4EFD\u989D%</th><th>\u805A\u7C7B</th><th>\u6F5C\u529B</th><th>\u7B56\u7565</th></tr>';
+    for (var rgi = 0; rgi < Math.min(sortedByPotential.length, 12); rgi++) {
+        var rg = sortedByPotential[rgi];
+        tableHtml += '<tr><td>'+rg.province+'</td><td>'+(rg.actual_sales/1000000).toFixed(1)+'M</td><td>'+rg.market_share_pct.toFixed(3)+'%'+
+            '</td><td><span class="tag tag-medium">'+rg.cluster_label+'</span></td><td><b style="color:#43e97b">'+rg.potential_index+'</b></td>'+
+            '<td style="font-size:11px;">'+rg.strategy+'</td></tr>';
+    }
+    tableHtml += '</table>';
+    $('#regionTable').html(tableHtml);
+}
+
+function renderCategoryTrend(data) {
+    var trends = data.category_trends || [];
+    var summary = data.summary || {};
+    var portfolioOptimization = data.portfolio_optimization || [];
+
+    $('#trendMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(summary.total_categories||0)+'</div><div class="metric-label">\u54C1\u7C7B\u603B\u6570</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:14px;color:#fa8bff">'+(summary.highest_potential||'-')+'</div><div class="metric-label">\u6700\u9AD8\u6F5C\u529B\u54C1\u7C7B</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:14px;color:#2bd2ff">'+(summary.dominant_category||'-')+'</div><div class="metric-label">\u5F53\u524D\u4E3B\u5BFC\u54C1\u7C7B</div></div>'
+    );
+
+    var categories = [];
+    var currentShares = [];
+    var futureShares = [];
+    for (var cti = 0; cti < trends.length; cti++) {
+        categories.push(trends[cti].category);
+        currentShares.push(trends[cti].current_market_share);
+        futureShares.push(trends[cti].future_market_share_12m);
+    }
+
+    charts.trend.setOption({
+        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#fa8bff'},
+        legend:{data:['\u5F53\u524D\u4EFD\u989D%','\u672A\u676512\u6708\u9884\u671F%'],textStyle:{color:'#8899aa'},top:0},
+        grid:{left:'3%',right:'4%',bottom:'3%',top:'40px',containLabel:true},
+        xAxis:{type:'category',data:categories,axisLabel:{color:'#8899aa',fontSize:11,interval:0}},
+        yAxis:{type:'value',name:'\u5E02\u573A\u4EFD\u989D %',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
+        series:[
+            {name:'\u5F53\u524D\u4EFD\u989D%',type:'bar',data:currentShares,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#fa8bff'},{offset:1,color:'#f093fb'}])},barWidth:'35%'},
+            {name:'\u672A\u676512\u6708\u9884\u671F%',type:'bar',data:futureShares,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#2bd2ff'},{offset:1,color:'#4facfe'}])},barWidth:'35%'}
+        ]
+    }, true);
+
+    var tableHtml = '<table><tr><th>\u54C1\u7C7B</th><th>\u5F53\u524D\u4EFD\u989D%</th><th>\u672A\u6765\u4EFD\u989D%</th><th>\u53D8\u5316</th><th>\u8D8B\u52BF</th><th>\u6F5C\u529B</th><th>\u5EFA\u8BAE</th></tr>';
+    for (var tri = 0; tri < trends.length; tri++) {
+        var t = trends[tri];
+        var changeClass = t.share_change_pct > 0 ? 'tag-high' : (t.share_change_pct < 0 ? 'tag-low' : 'tag-medium');
+        var changePrefix = t.share_change_pct > 0 ? '+' : '';
+        tableHtml += '<tr><td><b>'+t.category+'</b></td><td>'+t.current_market_share.toFixed(1)+'%</td><td>'+t.future_market_share_12m.toFixed(1)+'%'+
+            '</td><td><span class="tag '+changeClass+'">'+changePrefix+t.share_change_pct.toFixed(2)+'%</span></td>'+
+            '<td>'+t.trend_direction+'</td><td>'+t.growth_potential_level.split(' ')[0]+'</td><td style="font-size:11px;">'+t.recommendation+'</td></tr>';
+    }
+    tableHtml += '</table>';
+    $('#trendTable').html(tableHtml);
+
+    var insightHtml = '<div class="insight-title">\u1F4CB \u54C1\u7C7B\u7EC4\u5408\u4F18\u5316\u5EFA\u8BAE</div>';
+    for (var pi = 0; pi < portfolioOptimization.length; pi++) {
+        insightHtml += '<div>\u2022 '+portfolioOptimization[pi]+'</div>';
+    }
+    $('#trendInsight').html(insightHtml);
+}
+/*]]>*/</script>
+</body>
+</html>

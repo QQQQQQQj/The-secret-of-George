@@ -1,0 +1,43 @@
+# === IDE 配置文件 ===
+.idea/
+*.iml
+*.iws
+*.ipr
+vscode/
+
+# === Java 编译输出 ===
+target/
+*.class
+*.jar
+*.war
+*.log
+
+# === Python 缓存 ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# === Node/前端临时文件 (调试用) ===
+_check_syntax.js
+_extracted.js
+node_modules/
+
+# === 操作系统文件 ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === 环境配置/敏感信息 ===
+*.local
+application-local.yml
+
+# === 临时文件 ===
+*.tmp
+*.bak
+*.swp
+*~

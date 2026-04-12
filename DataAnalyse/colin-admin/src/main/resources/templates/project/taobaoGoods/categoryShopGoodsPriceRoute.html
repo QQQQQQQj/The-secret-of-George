@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('不同类别每个店铺的商品均价分析')"/>
+    <th:block th:include="include :: select2-css"/>
+</head>
+<body class="gray-bg">
+<div class="row">
+    <div class="col-sm-12 search-collapse">
+        <form id="table-form">
+            <div class="select-list">
+                <ul>
+                    <li class="select-time">
+                        <label style="width: 200px">商品类别： </label>
+<!--                        <input type="text" value="笔记本电脑" id="goodsCategory" placeholder="请输入商品类别" name="goodsCategory"/>-->
+                        <select name= "goodsCategory" id="goodsCategory" class="form-control select2-multiple">
+                            <option value="化妆品" selected>化妆品</option>
+                            <option value="家具">家具</option>
+                            <option value="家电">家电</option>
+                            <option value="食品">食品</option>
+                            <option value="护肤品">护肤品</option>
+                            <option value="服装">服装</option>
+                            <option value="笔记本电脑">笔记本电脑</option>
+                        </select>
+                    </li>
+                    <li>
+                        <a class="btn btn-primary btn-rounded btn-sm" onclick="getData()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>不同类别每个店铺的商品均价分析</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="echarts" style="height: 500px" id="analyseOne"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+</div>
+<th:block th:include="include :: footer"/>
+<th:block th:include="include :: echarts-js"/>
+<script type="text/javascript">
+    var prefix = ctx + "project/taobaoGoodsAnalyse";
+    $(function () {
+        getData()
+    });
+
+    function getData() {
+        $.get(prefix + "/categoryShopGoodsPrice?goodsCategory=" + $('#goodsCategory').val(), function (result) {
+            var lineChart = echarts.init(document.getElementById("analyseOne"));
+
+            if (result.code == web_status.SUCCESS) {
+                var lineoption = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            label: {
+                                backgroundColor: '#6a7985'
+                            }
+                        }
+                    },
+                    legend: {
+                        data: ['平均价格'],
+                        top: '5%' // 将图例位置调整到顶部
+                    },
+                    grid: {
+                        left: '0',
+                        right: '0',
+                        bottom: '0',
+                        containLabel: true
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: true,
+                            data: [],
+                            axisLabel: {
+                                rotate: 45,
+                                formatter: function(value) {
+                                    if (value.length > 6) {
+                                        return value.substring(0, 6) + '...';
+                                    } else {
+                                        return value;
+                                    }
+                                }
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#111111'
+                                }
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '平均价格',
+                            nameTextStyle: {
+                                color: '#333'
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#ccc'
+                                }
+                            },
+                            axisLabel: {
+                                color: '#333'
+                            },
+                            splitLine: {
+                                lineStyle: {
+                                    type: 'dashed',
+                                    color: '#ddd'
+                                }
+                            }
+                        },
+                    ],
+                    series: [
+                        {
+                            name: '平均价格',
+                            type: 'bar',
+                            data: [],
+                            yAxisIndex: 0,
+                            symbol: 'circle',
+                            symbolSize: 6,
+                            min:5,
+                            interval:1,
+                            lineStyle: {
+                                color: '#91CC75', // 蓝色线条
+                                width: 2
+                            },
+                            itemStyle: {
+                                color: '#91CC75'
+                            },
+                            label: {
+                                show: false,
+                                position: 'top',
+                                color: '#91CC75',
+                                formatter: function(params) {
+                                    return params.value.toLocaleString(); // 格式化数字
+                                }
+                            },
+                            emphasis: {
+                                focus: 'series'
+                            }
+                        },
+                    ]
+                };
+                for (let i = 0; i < result.data.length; i++) {
+                    lineoption.xAxis[0].data.push(result.data[i].shop_name)
+                    lineoption.series[0].data.push(result.data[i].avg_price)
+                }
+                lineChart.setOption(lineoption);
+                $(window).resize(lineChart.resize);
+            } else {
+                console.log(result)
+            }
+        });
+
+    }
+
+</script>
+</body>
+</html>

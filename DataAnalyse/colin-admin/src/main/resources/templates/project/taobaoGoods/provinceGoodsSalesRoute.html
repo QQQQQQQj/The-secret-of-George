@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('每个省的商品销量')"/>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>每个省的商品销量</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="echarts" style="height: 600px" id="analyseOne"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+</div>
+<th:block th:include="include :: footer"/>
+<script th:src="@{/ajax/libs/report/echarts/echarts-all.min.js?v=4.2.1}"></script>
+<script type="text/javascript">
+    var prefix = ctx + "project/taobaoGoodsAnalyse";
+    $(function () {
+        getData()
+    });
+
+    function getData() {
+        $.get(prefix + "/provinceGoodsSales", function (result) {
+            var mapChart = echarts.init(document.getElementById("analyseOne"));
+            if (result.code == web_status.SUCCESS) {
+                var mapoption = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}<br/>销量: {c}' // 显示省份名称和数据
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        x: 'left',
+                        data: ['销量'],
+                        textStyle: {
+                            color: '#000', // 图例文字颜色
+                        }
+                    },
+                    dataRange: {
+                        min: 0,
+                        max: 100000000,
+                        x: 'left',
+                        y: 'bottom',
+                        text: ['高', '低'], // 文本，默认为数值文本
+                        calculable: true,
+                        textStyle: {
+                            color: '#000', // 文字颜色
+                        }
+                    },
+                    toolbox: {
+                        show: true,
+                        orient: 'vertical',
+                        x: 'right',
+                        y: 'center',
+                        feature: {
+                            mark: {show: true},
+                            dataView: {show: true, readOnly: false},
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    roamController: {
+                        show: true,
+                        x: 'right',
+                        mapTypeControl: {
+                            'china': true
+                        }
+                    },
+                    series: [
+                        {
+                            name: '销量',
+                            type: 'map', // 确认 type 是 'map'
+                            mapType: 'china', // 地图类型为中国
+                            roam: false,
+                            label: {
+                                normal: {
+                                    show: true, // 启用省份标签
+                                    formatter: '{b}\n{c}', // 显示省份名称和数据
+                                    textStyle: {
+                                        fontSize: 12,
+                                        color: '#333' // 标签字体颜色
+                                    }
+                                },
+                                emphasis: {
+                                    show: true, // 高亮时启用省份标签
+                                    textStyle: {
+                                        fontSize: 14,
+                                        color: '#000' // 高亮字体颜色
+                                    }
+                                }
+                            },
+                            data: [] // 数据
+                        }
+                    ]
+                };
+
+                for (let i = 0; i < result.data.length; i++) {
+                    var mapData = {
+                        name: '',
+                        value: 0
+                    }
+                    mapData.name = result.data[i].province
+                    mapData.value = result.data[i].total_sales
+                    mapoption.series[0].data.push(mapData)
+                }
+                mapChart.setOption(mapoption);
+                $(window).resize(mapChart.resize);
+            } else {
+                console.log(result)
+            }
+        });
+
+    }
+
+</script>
+</body>
+</html>

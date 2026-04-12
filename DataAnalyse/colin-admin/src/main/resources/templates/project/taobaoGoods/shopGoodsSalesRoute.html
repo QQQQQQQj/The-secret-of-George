@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('店铺的销量排名')"/>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>店铺的销量排名</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="echarts" style="height: 600px" id="analyseOne"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+</div>
+<th:block th:include="include :: footer"/>
+<script th:src="@{/ajax/libs/report/echarts/echarts-all.min.js?v=4.2.1}"></script>
+<script type="text/javascript">
+    var prefix = ctx + "project/taobaoGoodsAnalyse";
+    $(function () {
+        getData()
+    });
+
+    function getData() {
+        $.get(prefix + "/shopGoodsSales", function (result) {
+            var mapChart = echarts.init(document.getElementById("analyseOne"));
+            if (result.code == web_status.SUCCESS) {
+                var lineoption = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {
+                        data: ['销量']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        boundaryGap: [0, 0.01]
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: []
+                    },
+                    series: [
+                        {
+                            name: '销量',
+                            type: 'bar',
+                            data: [],
+                            itemStyle: {
+                                color: '#33FF57' // 这里设置为绿色
+                            }
+                        },
+                    ]
+                };
+
+                for (let i = 0; i < result.data.length; i++) {
+                    lineoption.yAxis.data.push(result.data[i].shop_name)
+                    lineoption.series[0].data.push(result.data[i].total_sales)
+                }
+                mapChart.setOption(lineoption);
+                $(window).resize(mapChart.resize);
+            } else {
+                console.log(result)
+            }
+        });
+
+    }
+
+</script>
+</body>
+</html>

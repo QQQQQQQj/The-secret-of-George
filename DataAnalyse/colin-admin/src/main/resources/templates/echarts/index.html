@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> 化妆品数据可视化大屏中心</title>
+
+    <link rel="stylesheet" href="css/index.css">
+    <script src="js/jquery.js"></script>
+
+
+    <script>
+        $(function () {
+            $('.myscroll').myScroll({
+                speed: 60, //数值越大，速度越慢
+                rowHeight: 38 //li的高度
+            });
+        });
+
+        $(document).ready(function () {
+            var whei = $(window).width()
+            $("html").css({ fontSize: whei / 22 });
+            $(window).resize(function () {
+                var whei = $(window).width();
+                $("html").css({ fontSize: whei / 22 })
+            });
+        });
+    </script>
+</head>
+<body>
+
+<div class="main">
+    <div class="header">
+        <div class="header-left fl" id="time"></div>
+        <div class="header-center fl">
+            <div class="header-title">
+                化妆品数据可视化大屏中心
+            </div>
+            <div class="header-img"></div>
+        </div>
+        <div class="header-right fl"></div>
+        <div class="header-bottom fl"></div>
+
+    </div>
+
+    <div class="center">
+        <div class="center-left fl">
+            <div class="left-top">
+                <div class="title">不同年龄段女性购买需求分析</div>
+                <div id="chart1" class="allnav1">
+                </div>
+
+            </div>
+            <div class="left-cen">
+                <div class="title">网站搜索记录前五名</div>
+                <div class="company">
+                    <div id="searchTop5" class="allnav"></div>
+                </div>
+            </div>
+            <div class="left-bottom">
+                <div class="title">化妆品品牌销售量分析</div>
+                <div class="bottom-b">
+                    <div id="chart3" class="allnav"></div>
+                </div>
+
+            </div>
+        </div>
+        <div class="center-cen fl">
+            <div class="cen-top">
+                <div class="title">化妆品订单完成用户数省份分析</div>
+                <div class="top-bottom">
+                    <div id="map" class="allnav4"></div>
+                </div>
+
+
+            </div>
+            <div class="cen-bottom">
+                <div class="title">用户购买时间分析</div>
+                <div class="bottom-b">
+                    <div id="chart4" class="allnav3"></div>
+                </div>
+
+            </div>
+        </div>
+        <div class="center-right fr">
+            <div class="right-top">
+                <div class="title">化妆品数据展示</div>
+
+                <div class="echart wenzi">
+                    <div class="gun">
+                        <span>id</span>
+                        <span>化妆品品牌</span>
+                        <span>化妆品名称</span>
+                    </div>
+                    <div id="FontScroll" class="myscroll">
+                        <ul>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>1</b>
+                                    </span>
+                                    <span>SK-II</span>
+                                    <span>神仙水</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>2</b>
+                                    </span>
+                                    <span>迪奥</span>
+                                    <span>迪奥香水</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>3</b>
+                                    </span>
+                                    <span>海蓝之谜</span>
+                                    <span>海洋精华露</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>4</b>
+                                    </span>
+                                    <span>娇兰</span>
+                                    <span>金钻精华</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>5</b>
+                                    </span>
+                                    <span>兰蔻</span>
+                                    <span>水分缘舒缓保湿霜</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>6</b>
+                                    </span>
+                                    <span>圣罗兰</span>
+                                    <span>圆管口红</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>7</b>
+                                    </span>
+                                    <span>香奈儿</span>
+                                    <span>香奈儿粉饼</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>8</b>
+                                    </span>
+                                    <span>雪花秀</span>
+                                    <span>滋盈霜</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>9</b>
+                                    </span>
+                                    <span>雅诗兰黛</span>
+                                    <span>紧实修复精华露</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="fontInner clearfix">
+                                    <span>
+                                        <b>10</b>
+                                    </span>
+                                    <span>资生堂</span>
+                                    <span>清盈透亮洁面泡沫</span>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="right-cen">
+                <div class="title">季节购买力分析</div>
+                <div id="chart2" class="allnav"></div>
+            </div>
+            <div class="right-bottom">
+                <div class="title">近三年护肤类和彩妆类化妆品销量分析</div>
+                    <div id="chart5" class="allnav2"></div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+<script src="js/jquery.min.js"></script>
+<script src="js/echarts.min.js"></script>
+<script src="js/china.js"></script>
+<script src="js/fontscroll.js"></script>
+<script src="js/echarts.js"></script>
+
+
+<script>
+
+
+    //顶部时间
+    function getTime(){
+        var myDate = new Date();
+        var myYear = myDate.getFullYear(); //获取完整的年份(4位,1970-????)
+        var myMonth = myDate.getMonth()+1; //获取当前月份(0-11,0代表1月)
+        var myToday = myDate.getDate(); //获取当前日(1-31)
+        var myDay = myDate.getDay(); //获取当前星期X(0-6,0代表星期天)
+        var myHour = myDate.getHours(); //获取当前小时数(0-23)
+        var myMinute = myDate.getMinutes(); //获取当前分钟数(0-59)
+        var mySecond = myDate.getSeconds(); //获取当前秒数(0-59)
+        var week = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+        var nowTime;
+
+        nowTime = myYear+'-'+fillZero(myMonth)+'-'+fillZero(myToday)+'&nbsp;&nbsp;'+fillZero(myHour)+':'+fillZero(myMinute)+':'+fillZero(mySecond)+'&nbsp;&nbsp;'+week[myDay]+'&nbsp;&nbsp;';
+        //console.log(nowTime);
+        $('#time').html(nowTime);
+    };
+    function fillZero(str){
+        var realNum;
+        if(str<10){
+            realNum	= '0'+str;
+        }else{
+            realNum	= str;
+        }
+        return realNum;
+    }
+    setInterval(getTime,1000);
+
+</script>
+
+</body>
+</html>
