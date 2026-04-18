@@ -49,9 +49,6 @@
                 <li>
                     <a class="menuItem" th:href="@{/system/main}"><i class="fa fa-home"></i> <span class="nav-label">首页</span> </a>
                 </li>
-                <li>
-                    <a class="menuItem" th:href="@{/project/mlPrediction}"><i class="fa fa-line-chart"></i> <span class="nav-label">AI智能预测</span> </a>
-                </li>
                 <li th:each="menu : ${menus}">
                 	<a th:class="@{${!#strings.isEmpty(menu.url) && menu.url != '#'} ? ${menu.target}}" th:href="@{${#strings.isEmpty(menu.url)} ? |#| : ${menu.url}}" th:data-refresh="${menu.isRefresh == '0'}">
                 		<i class="fa fa-bar-chart-o" th:class="${menu.icon}"></i>
@@ -73,6 +70,9 @@
 							</ul>
 						</li>
 					</ul>
+                </li>
+                <li>
+                    <a class="menuItem" th:href="@{/project/mlPrediction}"><i class="fa fa-line-chart"></i> <span class="nav-label">AI智能预测</span> </a>
                 </li>
                 <li th:if="${demoEnabled}">
                     <a href="#"><i class="fa fa-desktop"></i><span class="nav-label">实例演示</span><span class="fa arrow"></span></a>

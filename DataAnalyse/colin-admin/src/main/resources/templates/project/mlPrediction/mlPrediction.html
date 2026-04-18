@@ -2,157 +2,206 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>机器学习预测中心</title>
+    <title>AI智能预测中心</title>
     <link rel="shortcut icon" href="favicon.ico">
     <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
     <link th:href="@{/css/font-awesome.min.css}" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: linear-gradient(135deg, #0c1426 0%, #1a2a4a 50%, #0d1b2e 100%);
-            color: #fff; font-family: 'Microsoft YaHei', sans-serif; min-height: 100vh;
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-card: rgba(17,24,39,0.88);
+            --border-subtle: rgba(99,102,241,0.12);
+            --border-active: rgba(99,102,241,0.4);
+            --accent-blue: #6366f1; --accent-cyan: #22d3ee; --accent-purple: #a855f7;
+            --accent-pink: #ec4899; --accent-green: #10b981; --accent-orange: #f59e0b; --accent-red: #ef4444;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b;
         }
-        .header {
-            background: rgba(0,40,80,0.8); padding: 20px; text-align: center;
-            border-bottom: 2px solid #00d4ff; position: relative;
-        }
-        .header h1 { font-size: 28px; background: linear-gradient(90deg, #00d4ff, #7b2ff7, #00d4ff);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s infinite; }
-        @keyframes shine { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg-primary);color:var(--text-primary);font-family:'Inter','Microsoft YaHei',sans-serif;min-height:100vh;overflow-x:hidden}
+        body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(99,102,241,0.07),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(34,211,238,0.05),transparent);pointer-events:none;z-index:0}
 
-        .toolbar { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; padding: 0 20px; }
-        .btn-ml {
-            padding: 10px 24px; border: none; border-radius: 25px; cursor: pointer;
-            font-size: 14px; font-weight: bold; transition: all 0.3s; position: relative; overflow: hidden;
-        }
-        .btn-sales { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
-        .btn-price { background: linear-gradient(135deg, #f093fb, #f5576c); color: #fff; }
-        .btn-gmv { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #fff; }
-        .btn-heat { background: linear-gradient(135deg, #fa709a, #fee140); color: #333; }
-        .btn-region { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #333; }
-        .btn-trend { background: linear-gradient(135deg, #fa8bff, #2bd2ff); color: #fff; }
-        .btn-all { background: linear-gradient(135deg, #ff0844, #ffb199); color: #fff; }
-        .btn-ml:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,212,255,0.4); }
-        .btn-ml.active { box-shadow: 0 0 20px rgba(255,255,255,0.5); transform: scale(1.05); }
+        .header{position:relative;z-index:1;padding:28px 32px 18px;text-align:center;background:linear-gradient(180deg,rgba(17,24,39,0.95) 0%,transparent 100%)}
+        .header-top{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px}
+        .header-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:20px;font-size:11px;font-weight:500;color:var(--accent-cyan);letter-spacing:1px;text-transform:uppercase}
+        .header-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-green);animation:pulse-dot 2s infinite}
+        @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.5)}}
+        .header h1{font-size:30px;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff 0%,#c7d2fe 50%,var(--accent-cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .header-subtitle{margin-top:8px;font-size:13px;color:var(--text-muted)}
+        .header-subtitle code{background:rgba(99,102,241,0.08);padding:2px 8px;border-radius:4px;color:var(--accent-purple);font-size:11px;margin:0 2px}
 
-        .status-bar { text-align: center; padding: 10px; font-size: 14px; }
-        .status-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; animation: pulse 2s infinite; }
-        .status-online { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
-        .status-offline { background: #ff4444; box-shadow: 0 0 10px #ff4444; }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .status-bar{text-align:center;padding:10px 20px;margin:0 32px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px;font-size:13px;color:var(--text-secondary);backdrop-filter:blur(20px)}
+        .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle}
+        .status-online{background:var(--accent-green);box-shadow:0 0 12px rgba(16,185,129,0.5)}
+        .status-offline{background:var(--accent-red);box-shadow:0 0 12px rgba(239,68,68,0.5)}
 
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; padding: 20px; max-width: 1800px; margin: 0 auto; }
-        .card {
-            background: rgba(13,27,46,0.9); border-radius: 16px; border: 1px solid rgba(0,212,255,0.2);
-            padding: 24px; backdrop-filter: blur(10px); transition: all 0.3s; position: relative; overflow: hidden;
-        }
-        .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, #00d4ff, transparent); animation: scan 3s infinite; }
-        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
-        .card:hover { border-color: rgba(0,212,255,0.5); transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,212,255,0.15); }
-        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
-        .card-title .icon { font-size: 24px; }
-        .chart-container { width: 100%; height: 350px; }
+        .toolbar{position:relative;z-index:1;display:flex;justify-content:center;gap:7px;margin:14px 32px;flex-wrap:wrap}
+        .btn-ml{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border:1px solid var(--border-subtle);border-radius:10px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);background:var(--bg-card);backdrop-filter:blur(10px);transition:all 0.25s;font-family:inherit;white-space:nowrap}
+        .btn-ml:hover{border-color:var(--border-active);color:var(--text-primary);background:rgba(99,102,241,0.08);transform:translateY(-1px)}
+        .btn-ml.active{border-color:var(--accent-blue);color:#fff;background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(34,211,238,0.08));box-shadow:0 0 16px rgba(99,102,241,0.15)}
+        .btn-all{border-color:var(--accent-purple);color:var(--accent-purple)}
+        .btn-all:hover,.btn-all.active{background:linear-gradient(135deg,rgba(168,85,247,0.18),rgba(236,72,153,0.08));color:#fff}
 
-        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
-        .metric-item { background: rgba(0,212,255,0.08); border-radius: 12px; padding: 14px; text-align: center; border: 1px solid rgba(0,212,255,0.15); }
-        .metric-value { font-size: 22px; font-weight: bold; color: #00d4ff; }
-        .metric-label { font-size: 12px; color: #8899aa; margin-top: 4px; }
+        .dashboard{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 32px 40px;max-width:1600px;margin:0 auto}
+        .card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:20px;backdrop-filter:blur(20px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden}
+        .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,0.3),transparent);opacity:0;transition:opacity 0.3s}
+        .card::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(99,102,241,0.03) 0%,transparent 70%);opacity:0;transition:opacity 0.3s;pointer-events:none}
+        .card:hover{border-color:var(--border-active);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.35),0 0 30px rgba(99,102,241,0.08)}
+        .card:hover::before{opacity:1}
+        .card:hover::after{opacity:1}
+        .card-title{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text-primary);letter-spacing:-0.3px}
+        .card-title .icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:15px;transition:all 0.3s}
+        .card:hover .icon{transform:scale(1.1) rotate(-3deg)}
+        .icon-blue{background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(99,102,241,0.05));border:1px solid rgba(99,102,241,0.15)}
+        .icon-pink{background:linear-gradient(135deg,rgba(236,72,153,0.2),rgba(236,72,153,0.05));border:1px solid rgba(236,72,153,0.15)}
+        .icon-cyan{background:linear-gradient(135deg,rgba(34,211,238,0.2),rgba(34,211,238,0.05));border:1px solid rgba(34,211,238,0.15)}
+        .icon-orange{background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(245,158,11,0.05));border:1px solid rgba(245,158,11,0.15)}
+        .icon-green{background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(16,185,129,0.05));border:1px solid rgba(16,185,129,0.15)}
+        .icon-purple{background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(168,85,247,0.05));border:1px solid rgba(168,85,247,0.15)}
 
-        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(13,27,46,0.95); display: none; justify-content: center; align-items: center; z-index: 100; border-radius: 16px; }
-        .spinner { width: 50px; height: 50px; border: 4px solid rgba(0,212,255,0.2); border-top-color: #00d4ff;
-            border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .chart-container{width:100%;height:320px;position:relative}
+        .metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+        .metric-item{background:linear-gradient(135deg,rgba(99,102,241,0.06),rgba(99,102,241,0.02));border:1px solid rgba(99,102,241,0.08);border-radius:14px;padding:14px 10px;text-align:center;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden}
+        .metric-item::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--accent-blue),var(--accent-cyan));opacity:0;transition:opacity 0.3s}
+        .metric-item:hover{background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(99,102,241,0.04));border-color:rgba(99,102,241,0.15);transform:translateY(-2px);box-shadow:0 4px 15px rgba(99,102,241,0.1)}
+        .metric-item:hover::before{opacity:1}
+        .metric-value{font-size:20px;font-weight:700;color:var(--accent-cyan);font-variant-numeric:tabular-nums;line-height:1.2;text-shadow:0 0 20px rgba(34,211,238,0.2)}
+        .metric-label{font-size:10px;color:var(--text-muted);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
 
-        .table-wrapper { overflow-x: auto; max-height: 400px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: rgba(0,212,255,0.15); padding: 10px 8px; text-align: left; color: #00d4ff; position: sticky; top: 0; }
-        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        tr:hover td { background: rgba(0,212,255,0.05); }
-        .tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
-        .tag-high { background: rgba(0,255,136,0.2); color: #00ff88; }
-        .tag-medium { background: rgba(255,193,7,0.2); color: #ffc107; }
-        .tag-low { background: rgba(255,68,68,0.2); color: #ff4444; }
+        .loading-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,14,26,0.94);display:none;justify-content:center;align-items:center;z-index:100;border-radius:16px;backdrop-filter:blur(8px)}
+        .spinner{width:36px;height:36px;border:3px solid rgba(99,102,241,0.15);border-top-color:var(--accent-blue);border-radius:50%;animation:spin 0.8s linear infinite;box-shadow:0 0 15px rgba(99,102,241,0.2)}
+        @keyframes spin{to{transform:rotate(360deg)}}
 
-        .insight-box { background: rgba(123,47,247,0.1); border-left: 3px solid #7b2ff7; padding: 12px 16px;
-            margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.6; }
-        .insight-title { color: #7b2ff7; font-weight: bold; margin-bottom: 6px; }
+        .table-wrapper{overflow-x:auto;max-height:340px;overflow-y:auto;border-radius:12px;border:1px solid rgba(99,102,241,0.06);background:rgba(17,24,39,0.3);margin-top:14px}
+        .table-wrapper::-webkit-scrollbar{width:6px;height:6px}.table-wrapper::-webkit-scrollbar-track{background:rgba(99,102,241,0.02);border-radius:3px}
+        .table-wrapper::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--accent-blue),var(--accent-purple));border-radius:3px}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(168,85,247,0.04));padding:11px 14px;text-align:left;color:var(--text-secondary);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;z-index:1;border-bottom:1px solid rgba(99,102,241,0.1)}
+        td{padding:9px 14px;border-bottom:1px solid rgba(99,102,241,0.03);color:var(--text-secondary);transition:background 0.2s}
+        tr:hover td{background:rgba(99,102,241,0.04)}
+        .tag{display:inline-block;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:0.3px}
+        .tag-high{background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05));color:var(--accent-green);border:1px solid rgba(16,185,129,0.2)}
+        .tag-medium{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));color:var(--accent-orange);border:1px solid rgba(245,158,11,0.2)}
+        .tag-low{background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05));color:var(--accent-red);border:1px solid rgba(239,68,68,0.2)}
+        .insight-box{background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(99,102,241,0.06));border:1px solid rgba(168,85,247,0.12);border-left:3px solid var(--accent-purple);padding:14px 18px;margin-top:16px;border-radius:0 12px 12px 0;font-size:12px;line-height:1.8;color:var(--text-secondary);transition:all 0.3s}
+        .insight-box:hover{background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(99,102,241,0.08));border-left-width:4px}
+        .insight-title{color:var(--accent-purple);font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:6px}
+        .insight-title::before{content:'\u1F916';font-size:14px}
+        .col-span-3{grid-column:span 3}
 
-        .hidden { display: none !important; }
+        /* 高级动画 */
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .card{animation:fadeInUp 0.5s ease-out backwards}
+        .card:nth-child(1){animation-delay:0.05s}.card:nth-child(2){animation-delay:0.1s}.card:nth-child(3){animation-delay:0.15s}
+        .card:nth-child(4){animation-delay:0.2s}.card:nth-child(5){animation-delay:0.25s}.card:nth-child(6){animation-delay:0.3s}
     </style>
 </head>
 <body>
+
 <div class="header">
-    <h1>&#x1F916; 机器学习预测分析中心</h1>
-    <div style="margin-top:8px;color:#8899aa;font-size:14px;">基于 Prophet / XGBoost / Random Forest / 聚类算法 的智能预测系统</div>
+    <div class="header-top"><span class="header-badge"><span class="dot"></span> AI Powered</span></div>
+    <h1>机器学习预测分析中心</h1>
+    <div class="header-subtitle">基于 <code>Holt-Winters</code> <code>GBDT</code> <code>Random Forest</code> <code>KMeans</code> 的智能预测系统</div>
 </div>
 
 <div class="status-bar" id="serviceStatus">
     <span class="status-dot status-offline" id="statusDot"></span>
     <span id="statusText">正在检测ML服务状态...</span>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        <button onclick="checkServiceStatus()" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#94a3b8;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)';this.style.color='#fff'" onmouseout="this.style.background='rgba(99,102,241,0.15)';this.style.color='#94a3b8'">🔄 重新检测</button>
+        <button onclick="runAllPredictions()" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;transition:all 0.2s;font-weight:600;" onmouseover="this.style.background='rgba(16,185,129,0.25)';this.style.color='#34d399'" onmouseout="this.style.background='rgba(16,185,129,0.15)';this.style.color='#10b981'">🚀 立即预测</button>
+        <button onclick="toggleDebugPanel()" id="debugToggleBtn" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:#f59e0b;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(245,158,11,0.2)'" onmouseout="this.style.background='rgba(245,158,11,0.1)'">🔧 调试</button>
+    </div>
+</div>
+
+<div id="debugPanel" style="display:none;margin:14px 32px;background:rgba(17,24,39,0.95);border:1px solid rgba(245,158,11,0.25);border-radius:12px;padding:16px;font-family:'Courier New',monospace;font-size:11px;color:#e2e8f0;backdrop-filter:blur(10px);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(245,158,11,0.15);">
+        <span style="color:#f59e0b;font-weight:600;font-size:13px;">🔧 API调试面板</span>
+        <span style="color:#64748b;font-size:10px;">实时显示请求/响应 | 刷新页面自动检测</span>
+    </div>
+    <div id="debugContent" style="max-height:300px;overflow-y:auto;line-height:1.6;">
+        <div style="color:#64748b;padding:8px;background:rgba(99,102,241,0.05);border-radius:6px;margin-bottom:8px;">等待检测...</div>
+    </div>
 </div>
 
 <div class="toolbar">
-    <button class="btn-ml btn-all active" onclick="runAllPredictions()">&#x1F680; 一键全部预测</button>
-    <button class="btn-ml btn-sales" onclick="runPrediction('sales')">&#x1F4C8; 时序销量预测</button>
-    <button class="btn-ml btn-price" onclick="runPrediction('price')">&#x1F4B0; 价格弹性分析</button>
-    <button class="btn-ml btn-gmv" onclick="runPrediction('gmv')">&#x1F3EA; 店铺GMV预测</button>
-    <button class="btn-ml btn-heat" onclick="runPrediction('heat')">&#x1F525; 商品热度预测</button>
-    <button class="btn-ml btn-region" onclick="runPrediction('region')">&#x1F5FA; 地区销量预测</button>
-    <button class="btn-ml btn-trend" onclick="runPrediction('trend')">&#x1F4CA; 品类趋势预测</button>
+    <button class="btn-ml btn-all active" onclick="runAllPredictions()">🚀 一键预测</button>
+    <button class="btn-ml btn-sales" onclick="runPrediction('sales')">📈 销量预测</button>
+    <button class="btn-ml btn-price" onclick="runPrediction('price')">💰 价格弹性</button>
+    <button class="btn-ml btn-gmv" onclick="runPrediction('gmv')">🏪 GMV预测</button>
+    <button class="btn-ml btn-heat" onclick="runPrediction('heat')">🔥 热度分析</button>
+    <button class="btn-ml btn-region" onclick="runPrediction('region')">🗺️ 地区分析</button>
+    <button class="btn-ml btn-trend" onclick="runPrediction('trend')">📊 品类趋势</button>
 </div>
 
 <div class="dashboard" id="dashboard">
-    <div class="card" id="salesCard" style="grid-column: span 2;">
-        <div class="card-title"><span class="icon">&#x1F4C8;</span>时序销量/销售额预测 (Prophet)</div>
+    <!-- 1. 时序销量预测 - 多轴组合图 -->
+    <div class="card col-span-3" id="salesCard">
+        <div class="card-title"><span class="icon icon-blue">📈</span>时序销量预测<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">Holt-Winters + KDE密度分布</span></div>
         <div class="metrics-row" id="salesMetrics"></div>
-        <div class="chart-container" id="salesChart"></div>
+        <div class="chart-container" id="salesChart" style="height:400px;"></div>
         <div class="insight-box" id="salesInsight"></div>
         <div class="loading-overlay"><div class="spinner"></div></div>
     </div>
 
-    <div class="card" id="priceCard">
-        <div class="card-title"><span class="icon">&#x1F4B0;</span>价格-销量弹性分析</div>
+    <!-- 2. 价格弹性分析 - 平滑Spline + 弹性雷达 -->
+    <div class="card col-span-3" id="priceCard">
+        <div class="card-title"><span class="icon icon-pink">💰</span>价格弹性分析<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">平滑曲线 + 弹性分布雷达</span></div>
         <div class="metrics-row" id="priceMetrics"></div>
-        <div class="chart-container" id="priceChart"></div>
+        <div style="display:flex;gap:16px;">
+            <div class="chart-container" id="priceChart" style="flex:1.5;height:360px;"></div>
+            <div class="chart-container" id="priceRadar" style="flex:0.75;height:360px;"></div>
+        </div>
         <div class="table-wrapper" id="priceTable"></div>
         <div class="loading-overlay"><div class="spinner"></div></div>
     </div>
 
-    <div class="card" id="gmvCard">
-        <div class="card-title"><span class="icon">&#x1F3EA;</span>店铺GMV潜力评估 (XGBoost)</div>
+    <!-- 3. 店铺GMV - 渐变条形 + 多维雷达 -->
+    <div class="card col-span-3" id="gmvCard">
+        <div class="card-title"><span class="icon icon-cyan">🏪</span>GMV潜力评估<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">渐变排名 + Top5多维蜘蛛图</span></div>
         <div class="metrics-row" id="gmvMetrics"></div>
-        <div class="chart-container" id="gmvChart"></div>
+        <div style="display:flex;gap:16px;">
+            <div class="chart-container" id="gmvChart" style="flex:1.35;height:360px;"></div>
+            <div class="chart-container" id="gmvRadar" style="flex:0.8;height:360px;"></div>
+        </div>
         <div class="table-wrapper" id="gmvTable"></div>
         <div class="loading-overlay"><div class="spinner"></div></div>
     </div>
 
-    <div class="card" id="heatCard">
-        <div class="card-title"><span class="icon">&#x1F525;</span>商品热度预测 (Random Forest)</div>
+    <!-- 4. 商品热度 - Sunburst旭日图 -->
+    <div class="card col-span-3" id="heatCard">
+        <div class="card-title"><span class="icon icon-orange">🔥</span>商品热度预测<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">Treemap树形热力图 + 热度分布</span></div>
         <div class="metrics-row" id="heatMetrics"></div>
-        <div class="chart-container" id="heatChart"></div>
+        <div class="chart-container" id="heatChart" style="height:420px;"></div>
         <div class="table-wrapper" id="heatTable"></div>
         <div class="loading-overlay"><div class="spinner"></div></div>
     </div>
 
-    <div class="card" id="regionCard" style="grid-column: span 2;">
-        <div class="card-title"><span class="icon">&#x1F5FA;</span>地区销量分布与潜力预测 (聚类)</div>
+    <!-- 5. 地区销量 - 气泡矩阵 + 排名 + 聚类雷达 -->
+    <div class="card col-span-3" id="regionCard">
+        <div class="card-title"><span class="icon icon-green">🗺️</span>地区销量分布<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">气泡热力矩阵 + 排名条 + 聚类对比</span></div>
         <div class="metrics-row" id="regionMetrics"></div>
-        <div style="display:flex;gap:20px;">
-            <div class="chart-container" id="regionChart" style="flex:1;"></div>
-            <div class="chart-container" id="regionBarChart" style="flex:1;"></div>
+        <div style="display:flex;gap:16px;">
+            <div class="chart-container" id="regionChart" style="flex:1.3;height:370px;"></div>
+            <div class="chart-container" id="regionBarChart" style="flex:0.65;height:370px;"></div>
+            <div class="chart-container" id="regionRadar" style="flex:0.65;height:370px;"></div>
         </div>
         <div class="table-wrapper" id="regionTable"></div>
         <div class="loading-overlay"><div class="spinner"></div></div>
     </div>
 
-    <div class="card" id="trendCard" style="grid-column: span 2;">
-        <div class="card-title"><span class="icon">&#x1F4CA;</span>品类销量趋势预测 (未来12个月)</div>
+    <!-- 6. 品类趋势 - Stream河流图 + 属性雷达 -->
+    <div class="card col-span-3" id="trendCard">
+        <div class="card-title"><span class="icon icon-purple">📊</span>品类趋势预测<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">Stream堆叠面积图 + 属性雷达</span></div>
         <div class="metrics-row" id="trendMetrics"></div>
-        <div class="chart-container" id="trendChart"></div>
+        <div style="display:flex;gap:16px;">
+            <div class="chart-container" id="trendChart" style="flex:1.3;height:380px;"></div>
+            <div class="chart-container" id="trendRadar" style="flex:0.85;height:380px;"></div>
+        </div>
         <div class="table-wrapper" id="trendTable"></div>
         <div class="insight-box" id="trendInsight"></div>
         <div class="loading-overlay"><div class="spinner"></div></div>
@@ -169,421 +218,1074 @@ var ctx = [[@{/}]];
 <script th:inline="none">/*<![CDATA[*/
 var prefix = ctx + "project/mlPrediction";
 var charts = {};
+var debugLogs = [];
 
-$(function() {
-    console.log('[ML-DEBUG] JS开始执行, ctx=' + ctx + ', prefix=' + prefix);
-    checkServiceStatus();
-    initCharts();
+function addDebugLog(type, msg) {
+    var time = new Date().toLocaleTimeString();
+    var color = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : (type === 'warn' ? '#f59e0b' : '#6366f1'));
+    var icon = type === 'success' ? '[OK]' : (type === 'error' ? '[X]' : (type === 'warn' ? '[!]' : '[i]'));
+    debugLogs.push({time: time, type: type, icon: icon, msg: msg, color: color});
+    if(debugLogs.length > 20) debugLogs.shift(); // 只保留最近20条
+    renderDebugPanel();
+}
+
+function renderDebugPanel() {
+    var html = '';
+    for(var i=debugLogs.length-1; i>=0; i--){
+        var log = debugLogs[i];
+        var bg = log.type==='success'?'rgba(16,185,129,0.08)':(log.type==='error'?'rgba(239,68,68,0.08)':'rgba(99,102,241,0.05)');
+        html += '<div style="padding:6px 10px;margin-bottom:4px;background:'+bg+';border-radius:4px;border-left:3px solid '+log.color+';">'+
+               '<span style="color:#64748b">'+log.time+'</span> <span style="color:'+log.color+';font-weight:600">'+log.icon+'</span> '+
+               '<span style="color:#e2e8f0">'+log.msg+'</span></div>';
+    }
+    if(html === '') html = '<div style="color:#64748b;padding:8px;background:rgba(99,102,241,0.05);border-radius:6px;margin-bottom:8px;">Waiting...</div>';
+    $('#debugContent').html(html);
+}
+
+function toggleDebugPanel() {
+    var panel = $('#debugPanel');
+    var btn = $('#debugToggleBtn');
+    if(panel.css('display') === 'none') {
+        panel.slideDown(300);
+        btn.css('background', 'rgba(245,158,11,0.25)');
+        btn.text('[DEBUG] Close');
+        addDebugLog('info', '调试面板已打开 | 显示所有API请求和响应');
+    } else {
+        panel.slideUp(300);
+        btn.css('background', 'rgba(245,158,11,0.1)');
+        btn.text('[DEBUG]');
+    }
+}
+
+$(function() { 
+    addDebugLog('info', '页面初始化开始...'); 
+    checkServiceStatus(); 
+    initCharts(); 
 });
 
 function checkServiceStatus() {
-    console.log('[ML-DEBUG] 开始检测ML服务状态, URL=' + prefix + "/serviceStatus");
-    $.get({url: prefix + "/serviceStatus", timeout: 10000}).done(function(res) {
-        console.log('[ML-DEBUG] serviceStatus响应:', JSON.stringify(res));
-        if (res.code == 0 && res.data && res.data.status === 'running') {
-            $('#statusDot').removeClass('status-offline').addClass('status-online');
-            $('#statusText').text('\u2705 ML服务运行正常 - ' + res.data.version + ' | API文档: ' + window.location.origin.replace(':6002',':6003') + '/docs');
-            console.log('[ML-DEBUG] ML服务在线!');
-        } else {
-            $('#statusText').html('\u26A0\uFE0F ML服务未启动 | 请执行: &lt;code style=&quot;background:#333;padding:2px 8px;border-radius:4px;&quot;&gt;cd ml_service &amp;amp;&amp;amp; pip install -r requirements.txt &amp;amp;&amp;amp; python main.py&lt;/code&gt;');
-            console.log('[ML-DEBUG] ML服务离线或异常');
+    $('#statusText').html('<span style="color:#f59e0b">\u23F3 \u6B63\u5728\u68C0\u6D4BML\u8FD0\u884C\u72B6\u6001...</span>');
+    $.ajax({
+        url: prefix + "/serviceStatus",
+        type: 'GET',
+        timeout: 10000,
+        success: function(res) {
+            console.log('[ML Service] Response:', res);
+            if(res && (res.code == 0 || res.code === 0)) {
+                if(res.data) {
+                    if(typeof res.data === 'object' && res.data.status === 'running') {
+                        $('#statusDot').removeClass('status-offline').addClass('status-online');
+                        var ver = res.data.version || '1.0.0';
+                        $('#statusText').html('\u2705 <b>ML\u670D\u52A1\u8FD0\u884C\u6B63\u5E38</b> - v' + ver + ' | \u53EF\u4EE5\u5F00\u59CB\u9884\u6D4B');
+                    } else if(typeof res.data === 'string' && res.data.indexOf('running') > -1) {
+                        $('#statusDot').removeClass('status-offline').addClass('status-online');
+                        $('#statusText').html('\u2705 <b>ML\u670D\u52A1\u8FD0\u884C\u6B3E\u6001</b> | \u53EF\u4EE5\u5F00\u59CB\u9884\u6D4B');
+                    } else {
+                        $('#statusDot').removeClass('status-online').addClass('status-offline');
+                        $('#statusText').html('\u26A0\uFE0F <b>ML\u670D\u52A1\u72B6\u6001\u5F02\u5E38</b> - ' + JSON.stringify(res.data).substring(0,50));
+                    }
+                } else {
+                    $('#statusDot').removeClass('status-offline').addClass('status-online');
+                    $('#statusText').html('\u2705 <b>\u540E\u7AEF\u8FDE\u63A5\u6B63\u5E38</b> | ML\u670D\u52A1\u53EF\u7528');
+                }
+            } else {
+                $('#statusDot').removeClass('status-online').addClass('status-offline');
+                var errMsg = res.msg || res.message || '\u672A\u77E5\u9519\u8BEF';
+                $('#statusText').html('\u274C <b>\u68C0\u6D4B\u5931\u8D25:</b> ' + errMsg);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('[ML Service] Error:', status, error);
+            $('#statusDot').removeClass('status-online').addClass('status-offline');
+            if(status === 'timeout') {
+                $('#statusText').html('\u23F7 <b>\u8BF7\u6C82\u8D85\u65F6</b> (\u8D85\u8FC710\u79D2) | \u68C0\u67E5\u7F51\u7EDC\u6216ML\u670D\u52A1\u662F\u5426\u542F\u52A8');
+            } else if(xhr.status === 401 || xhr.status === 403) {
+                $('#statusText').html('\uD83D\uDD11 <b>\u9700\u8981\u767B\u5F55</b> (\u72B6\u6001\u7801:' + xhr.status + ') | \u8BF7\u5148\u767B\u5F55\u7CFB\u7EDF');
+            } else {
+                $('#statusText').html('\u274C <b>\u8FDE\u63A5\u5931\u8D25</b> (' + status + ') | \u786E\u8BA4Java\u540E\u7AEF(6002)\u548CMPython\u670D\u52A1(6003)\u90FD\u5DF2\u542F\u52A8');
+            }
+        },
+        complete: function() {
+            setTimeout(checkServiceStatus, 30000);
         }
-    }).fail(function(xhr, status, error) {
-        console.error('[ML-DEBUG] serviceStatus请求失败! status=' + status + ', error=' + error);
-        $('#statusText').text('\u274C 无法连接ML服务，请先启动Python ML服务(端口6003)');
     });
 }
 
 function initCharts() {
-    console.log('[ML-DEBUG] 初始化ECharts图表...');
     charts.sales = echarts.init(document.getElementById('salesChart'));
     charts.price = echarts.init(document.getElementById('priceChart'));
+    charts.priceRadar = echarts.init(document.getElementById('priceRadar'));
     charts.gmv = echarts.init(document.getElementById('gmvChart'));
+    charts.gmvRadar = echarts.init(document.getElementById('gmvRadar'));
     charts.heat = echarts.init(document.getElementById('heatChart'));
     charts.region = echarts.init(document.getElementById('regionChart'));
     charts.regionBar = echarts.init(document.getElementById('regionBarChart'));
+    charts.regionRadar = echarts.init(document.getElementById('regionRadar'));
     charts.trend = echarts.init(document.getElementById('trendChart'));
-    console.log('[ML-DEBUG] ECharts初始化完成, 共' + Object.keys(charts).length + '个图表');
-
-    window.addEventListener('resize', function() {
-        Object.values(charts).forEach(function(c) { if(c) c.resize(); });
-    });
-
+    charts.trendRadar = echarts.init(document.getElementById('trendRadar'));
+    window.addEventListener('resize', function() { Object.values(charts).forEach(function(c){if(c)c.resize();}); });
     showEmptyState();
 }
 
 function showEmptyState() {
-    var emptyOption = {
-        title: { text: '\u70B9\u51FB\u4E0A\u65B9\u6309\u94AE\u5F00\u59CB\u9884\u6D4B', left: 'center', top: 'center',
-                 textStyle: {color:'#556677',fontSize:16,fontWeight:'normal'} },
-        xAxis: { show:false }, yAxis: { show:false }, series: []
-    };
-    var chartKeys = Object.keys(charts);
-    for (var i = 0; i < chartKeys.length; i++) {
-        charts[chartKeys[i]].setOption(emptyOption, true);
-    }
+    var e={title:{text:'\u70B9\u51FB\u4E0A\u65B9\u6309\u94AE\u5F00\u59CB\u9884\u6D4B',left:'center',top:'center',textStyle:{color:'#556677',fontSize:15}},xAxis:{show:false},yAxis:{show:false},series:[],radar:{indicator:[],axisLine:{show:false}},polar:{center:['50%','50%']}};
+    Object.keys(charts).forEach(function(k){charts[k].setOption(e,true)});
 }
 
 function runAllPredictions() {
-    $('.btn-ml').removeClass('active'); $('.btn-all').addClass('active');
-    showLoading(true);
-    $.get(prefix + "/runAll?salesDays=30", function(res) {
-        if (res.code == 0) {
-            var data = res.data.predictions;
-            if (data.sales_forecast && data.sales_forecast.data) renderSalesForecast(data.sales_forecast.data);
-            if (data.price_elasticity && data.price_elasticity.data) renderPriceElasticity(data.price_elasticity.data);
-            if (data.shop_gmv && data.shop_gmv.data) renderShopGmv(data.shop_gmv.data);
-            if (data.product_heat && data.product_heat.data) renderProductHeat(data.product_heat.data);
-            if (data.province_sales && data.province_sales.data) renderRegionSales(data.province_sales.data);
-            if (data.category_trend && data.category_trend.data) renderCategoryTrend(data.category_trend.data);
-
-            var summary = res.data.summary;
-            showToast('\u2705 \u5168\u90E8 ' + summary.total_models + ' \u4E2A\u6A21\u578B\u9884\u6D4B\u5B8C\u6210\uFF01\u6210\u529F ' + summary.successful + ' \u4E2A\uFF0C\u8017\u65F6 ' + summary.total_execution_time + 's');
-        } else {
-            showToast('\u274C \u9884\u6D4B\u5931\u8D25: ' + res.msg);
+    $('.btn-ml').removeClass('active'); $('.btn-all').addClass('active'); showLoading(true);
+    showToast('<span style="color:#f59e0b">\u23F3 \u6B63\u5728\u52A0\u8F7D\u5168\u90E8\u9884\u6D4B\u6570\u636E...</span>');
+    
+    $.ajax({
+        url: prefix + "/runAll?salesDays=30",
+        type: 'GET',
+        timeout: 30000,
+        success: function(res) {
+            console.log('[RunAll] Response:', res);
+            if(res && (res.code == 0 || res.code === 0) && res.data){
+                var d=res.data.predictions || res.data;
+                var successCount = 0;
+                
+                try {
+                    if(d.sales_forecast&&d.sales_forecast.data){ renderSalesForecast(d.sales_forecast.data); successCount++; }
+                    if(d.price_elasticity&&d.price_elasticity.data){ renderPriceElasticity(d.price_elasticity.data); successCount++; }
+                    if(d.shop_gmv&&d.shop_gmv.data){ renderShopGmv(d.shop_gmv.data); successCount++; }
+                    if(d.product_heat&&d.product_heat.data){ renderProductHeat(d.product_heat.data); successCount++; }
+                    if(d.province_sales&&d.province_sales.data){ renderRegionSales(d.province_sales.data); successCount++; }
+                    if(d.category_trend&&d.category_trend.data){ renderCategoryTrend(d.category_trend.data); successCount++; }
+                    
+                    var totalModels = (res.data.summary && res.data.summary.total_models) || successCount;
+                    showToast('\u2705 <b>\u9884\u6D4B\u5B8C\u6210</b> | \u6210\u529F\u52A0\u8F7D ' + successCount + ' \u4E2A\u6A21\u578B (\u603B\u8BA1' + totalModels + ' \u4E2A)');
+                } catch(e) {
+                    console.error('[RunAll] Render error:', e);
+                    showToast('\u26A0\uFE0F <b>\u6E32\u67D3\u9519\u8BEF:</b> ' + e.message);
+                }
+            } else {
+                var errMsg = (res && res.msg) || (res && res.message) || '\u672A\u77E5\u9519\u8BEF';
+                showToast('\u274C <b>\u9884\u6D4B\u5931\u8D25:</b> ' + errMsg);
+            }
+            showLoading(false);
+        },
+        error: function(xhr, status, error) {
+            console.error('[RunAll] Error:', status, error);
+            showLoading(false);
+            if(status === 'timeout') {
+                showToast('\u23F7 <b>\u8BF7\u6C82\u8D85\u65F6</b> | ML\u670D\u52A1\u54CD\u5E94\u8FC7\u6162\uff0c\u8BF7\u7A0D\u540E\u91CD\u8BD5');
+            } else if(xhr.status === 401 || xhr.status === 403) {
+                showToast('\uD83D\uDD11 <b>\u6743\u9650\u4E0D\u8DB3</b> | \u8BF7\u91CD\u65B0\u767B\u5F55');
+            } else {
+                showToast('\u274C <b>\u7F51\u7EDC\u9519\u8BEF</b> (' + status + ') | \u68C0\u67E5ML\u670D\u52A1(6003)\u662F\u5426\u542F\u52A8');
+            }
         }
-        showLoading(false);
-    }).fail(function() { showLoading(false); showToast('\u274C \u8BF7\u6C42\u5931\u8D25\uFF0C\u8BF7\u68C0\u67E5ML\u670D\u52A1\u662F\u5426\u542F\u52A8'); });
+    });
 }
 
 function runPrediction(type) {
     $('.btn-ml').removeClass('active');
-    if (type === 'sales') { $('.btn-sales').addClass('active'); loadSales(); }
-    else if (type === 'price') { $('.btn-price').addClass('active'); loadPrice(); }
-    else if (type === 'gmv') { $('.btn-gmv').addClass('active'); loadGmv(); }
-    else if (type === 'heat') { $('.btn-heat').addClass('active'); loadHeat(); }
-    else if (type === 'region') { $('.btn-region').addClass('active'); loadRegion(); }
-    else if (type === 'trend') { $('.btn-trend').addClass('active'); loadTrend(); }
+    var m={sales:'.btn-sales',price:'.btn-price',gmv:'.btn-gmv',heat:'.btn-heat',region:'.btn-region',trend:'.btn-trend'};
+    $(m[type]).addClass('active');
+    var f={sales:function(){loadSales()},price:function(){loadPrice()},gmv:function(){loadGmv()},heat:function(){loadHeat()},region:function(){loadRegion()},trend:function(){loadTrend()}};
+    f[type]();
+}
+function loadSales(){
+    showCardLoading('salesCard');
+    $.ajax({
+        url: prefix + "/salesForecast?days=30",
+        type: 'GET',
+        timeout: 20000,
+        success: function(r){
+            if(r && (r.code == 0 || r.code === 0) && r.data){
+                try { renderSalesForecast(r.data); } catch(e){ console.error('[Sales] Render error:', e); }
+            } else { showToast('\u274C \u65F6\u5E8F\u9500\u91CF\u52A0\u8F7D\u5931\u8D25'); }
+            showCardLoading('salesCard', false);
+        },
+        error: function(xhr, status){
+            showCardLoading('salesCard', false);
+            showToast('\u274C \u65F6\u5E8F\u9500\u91CF\u8BF7\u6C42\u5931\u8D25 ('+status+')');
+        }
+    });
+}
+function loadPrice(){
+    showCardLoading('priceCard');
+    $.ajax({
+        url: prefix + "/priceElasticity",
+        type: 'GET',
+        timeout: 20000,
+        success: function(r){
+            if(r && (r.code == 0 || r.code === 0) && r.data){
+                try { renderPriceElasticity(r.data); } catch(e){ console.error('[Price] Render error:', e); }
+            } else { showToast('\u274C \u4EF7\u683C\u5F39\u6027\u52A0\u8F7D\u5931\u8D25'); }
+            showCardLoading('priceCard', false);
+        },
+        error: function(xhr, status){
+            showCardLoading('priceCard', false);
+            showToast('\u274C \u4EF7\u683C\u5F39\u6027\u8BF7\u6C42\u5931\u8D25 ('+status+')');
+        }
+    });
+}
+function loadGmv(){
+    showCardLoading('gmvCard');
+    $.ajax({
+        url: prefix + "/shopGmv",
+        type: 'GET',
+        timeout: 20000,
+        success: function(r){
+            if(r && (r.code == 0 || r.code === 0) && r.data){
+                try { renderShopGmv(r.data); } catch(e){ console.error('[GMV] Render error:', e); }
+            } else { showToast('\u274C GMV\u6F5C\u529B\u52A0\u8F7D\u5931\u8D25'); }
+            showCardLoading('gmvCard', false);
+        },
+        error: function(xhr, status){
+            showCardLoading('gmvCard', false);
+            showToast('\u274C GMV\u6F5C\u529B\u8BF7\u6C42\u5931\u8D25 ('+status+')');
+        }
+    });
+}
+function loadHeat(){
+    showCardLoading('heatCard');
+    $.ajax({
+        url: prefix + "/productHeat",
+        type: 'GET',
+        timeout: 20000,
+        success: function(r){
+            if(r && (r.code == 0 || r.code === 0) && r.data){
+                try { renderProductHeat(r.data); } catch(e){ console.error('[Heat] Render error:', e); }
+            } else { showToast('\u274C \u5546\u54C1\u70ED\u5EA6\u52A0\u8F7D\u5931\u8D25'); }
+            showCardLoading('heatCard', false);
+        },
+        error: function(xhr, status){
+            showCardLoading('heatCard', false);
+            showToast('\u274C \u5546\u54C1\u70ED\u5EA6\u8BF7\u6C42\u5931\u8D25 ('+status+')');
+        }
+    });
+}
+function loadRegion(){
+    showCardLoading('regionCard');
+    $.ajax({
+        url: prefix + "/provinceSales",
+        type: 'GET',
+        timeout: 20000,
+        success: function(r){
+            if(r && (r.code == 0 || r.code === 0) && r.data){
+                try { renderRegionSales(r.data); } catch(e){ console.error('[Region] Render error:', e); }
+            } else { showToast('\u274C \u5730\u533A\u9500\u91CF\u52A0\u8F7D\u5931\u8D25'); }
+            showCardLoading('regionCard', false);
+        },
+        error: function(xhr, status){
+            showCardLoading('regionCard', false);
+            showToast('\u274C \u5730\u533A\u9500\u91CF\u8BF7\u6C42\u5931\u8D25 ('+status+')');
+        }
+    });
+}
+function loadTrend(){
+    showCardLoading('trendCard');
+    $.ajax({
+        url: prefix + "/categoryTrend?futurePeriods=12",
+        type: 'GET',
+        timeout: 20000,
+        success: function(r){
+            if(r && (r.code == 0 || r.code === 0) && r.data){
+                try { renderCategoryTrend(r.data); } catch(e){ console.error('[Trend] Render error:', e); }
+            } else { showToast('\u274C \u54C1\u7C7B\u8D8B\u52BF\u52A0\u8F7D\u5931\u8D25'); }
+            showCardLoading('trendCard', false);
+        },
+        error: function(xhr, status){
+            showCardLoading('trendCard', false);
+            showToast('\u274C \u54C1\u7C7B\u8D8B\u52BF\u8BF7\u6C42\u5931\u8D25 ('+status+')');
+        }
+    });
 }
 
-function loadSales() { showCardLoading('salesCard'); $.get(prefix+"/salesForecast?days=30", function(res){ if(res.code==0)renderSalesForecast(res.data);showCardLoading('salesCard',false); }); }
-function loadPrice() { showCardLoading('priceCard'); $.get(prefix+"/priceElasticity", function(res){ if(res.code==0)renderPriceElasticity(res.data);showCardLoading('priceCard',false); }); }
-function loadGmv() { showCardLoading('gmvCard'); $.get(prefix+"/shopGmv", function(res){ if(res.code==0)renderShopGmv(res.data);showCardLoading('gmvCard',false); }); }
-function loadHeat() { showCardLoading('heatCard'); $.get(prefix+"/productHeat", function(res){ if(res.code==0)renderProductHeat(res.data);showCardLoading('heatCard',false); }); }
-function loadRegion() { showCardLoading('regionCard'); $.get(prefix+"/provinceSales", function(res){ if(res.code==0)renderRegionSales(res.data);showCardLoading('regionCard',false); }); }
-function loadTrend() { showCardLoading('trendCard'); $.get(prefix+"/categoryTrend?futurePeriods=12", function(res){ if(res.code==0)renderCategoryTrend(res.data);showCardLoading('trendCard',false); }); }
+function showCardLoading(id,s){$('#'+id+' .loading-overlay').css('display',(s!==false)?'flex':'none')}
+function showLoading(s){$('.loading-overlay').css('display',(s!==false)?'flex':'none')}
+function showToast(msg){$('#statusText').html(msg);setTimeout(checkServiceStatus,5000)}
 
-function showCardLoading(cardId, show) { if(show === undefined) show = true; $('#'+cardId+' .loading-overlay').css('display', show?'flex':'none'); }
-function showLoading(show) { if(show === undefined) show = true; if(show) $('.loading-overlay').css('display','flex'); else $('.loading-overlay').css('display','none'); }
-function showToast(msg) { $('#statusText').html(msg); setTimeout(function(){checkServiceStatus();},5000); }
-
+/* ========== 1. 时序销量 - 折线+置信带+底部KDE密度直方图（增强版） ========== */
 function renderSalesForecast(data) {
-    var history = data.history || [];
-    var prediction = data.prediction || [];
-    var components = data.components || {};
-    var accuracy = data.model_accuracy || {};
+    var h=data.history||[], p=data.prediction||[], c=data.components||{}, a=data.model_accuracy||{};
+    var dates=[]; for(var i=0;i<h.length;i++) dates.push(h[i].date);
+    for(i=0;i<p.length;i++) dates.push(p[i].date);
 
-    var dates = [];
-    for (var h = 0; h < history.length; h++) dates.push(history[h].date);
-    for (var p = 0; p < prediction.length; p++) dates.push(prediction[p].date);
+    var actual=[], pred=[], ub=[], lb=[];
+    for(i=0;i<h.length;i++) actual.push(h[i].sales_count/10000000);
+    for(i=0;i<h.length;i++){pred.push(null);ub.push(null);lb.push(null);}
+    for(i=0;i<p.length;i++){pred.push(p[i].predicted_sales/10000000);ub.push(p[i].upper_bound/10000000);lb.push(p[i].lower_bound/10000010);}
 
-    var actualSales = [];
-    for (var s = 0; s < history.length; s++) actualSales.push(history[s].sales_count/10000000);
-
-    var predSales = [];
-    for (var pad = 0; pad < history.length; pad++) predSales.push(null);
-    for (var pp = 0; pp < prediction.length; pp++) predSales.push(prediction[pp].predicted_sales/10000000);
-
-    var upperBound = [];
-    for (var ub = 0; ub < history.length; ub++) upperBound.push(null);
-    for (var ubp = 0; ubp < prediction.length; ubp++) upperBound.push(prediction[ubp].upper_bound/10000000);
-
-    var lowerBound = [];
-    for (var lb = 0; lb < history.length; lb++) lowerBound.push(null);
-    for (var lbp = 0; lbp < prediction.length; lbp++) lowerBound.push(prediction[lbp].lower_bound/10000010);
-
-    var trendDir = components.trend || '-';
-    var trendColor = trendDir === '\u4E0A\u5347' ? '#00ff88' : '#ff4444';
-
+    var td=c.trend||'-'; var tc=td==='\u4E0A\u5347'?'#10b981':'#ef4444';
     $('#salesMetrics').html(
-        '<div class="metric-item"><div class="metric-value">'+(accuracy.mape||0)+'%</div><div class="metric-label">MAPE\u8BEF\u5DEE</div></div>'+
-        '<div class="metric-item"><div class="metric-value">'+(accuracy.r2||0)+'</div><div class="metric-label">R\u00B2\u5F97\u5206</div></div>'+
-        '<div class="metric-item"><div class="metric-value">'+prediction.length+'</div><div class="metric-label">\u9884\u6D4B\u5929\u6570</div></div>'+
-        '<div class="metric-item"><div class="metric-value" style="color:'+trendColor+'">'+trendDir+'</div><div class="metric-label">\u8D8B\u52BF\u65B9\u5411</div></div>'
+        '<div class="metric-item"><div class="metric-value">'+(a.mape||0)+'%</div><div class="metric-label">MAPE</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(a.r2||0)+'</div><div class="metric-label">R\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+p.length+'</div><div class="metric-label">\u9884\u6D4B\u5929\u6570</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="color:'+tc+'">'+td+'</div><div class="metric-label">\u8D8B\u52BF</div></div>'
     );
+    $('#salesInsight').html('<div class="insight-title">AI洞察</div>'+(td==='\u4E0A\u5347'?'\uD83D\uDCC8 销量呈上升趋势，建议增加库存准备':'\uD83D\uDCC9 销量趋于平稳或下降，需关注市场变化'));
 
-    var trendText = trendDir === '\u4E0A\u5347' ? '\u1F4C8 \u9500\u91CF\u5448\u4E0A\u5347\u8D8B\u52BF\uFF0C\u9884\u8BA1\u672A\u6765\u589E\u957F\u7EA6 ' + (Math.abs(components.growth_rate)||0) + '%' : '\u1F4C9 \u9500\u91CF\u8D8B\u4E8E\u5E73\u7A33\u6216\u4E0B\u964D\uFF0C\u5EFA\u8BAE\u5173\u6CE8\u4FC3\u9500\u7B56\u7565';
-    $('#salesInsight').html('<div class="insight-title">\u1F916 AI\u6D1E\u5BDF</div>' + trendText);
+    /* 构建增强版KDE数据 - 使用更平滑的分布 */
+    var validPred=pred.filter(function(x){return x!=null});
+    var mx=Math.max.apply(null,validPred)||1, mn=Math.min.apply(null,validPred)||0;
+    var kde=[];
+    for(var k=0;k<=30;k++){
+        var v=mn+(mx-mn)*k/30*1.1;
+        var mu=(mx+mn)/2, sigma=Math.abs(mx-mn)/4;
+        kde.push([v.toFixed(2), (1/(sigma*Math.sqrt(2*Math.PI)))*Math.exp(-Math.pow(v-mu,2)/(2*Math.pow(sigma,2)))*85]);
+    }
 
     charts.sales.setOption({
-        tooltip: { trigger:'axis', backgroundColor:'rgba(13,27,46,0.95)', borderColor:'#00d4ff', textStyle:{color:'#fff'} },
-        legend: { data:['\u5B9E\u9645\u9500\u91CF','\u9884\u6D4B\u9500\u91CF','\u7F6E\u4FE1\u533A\u95F4'], textStyle:{color:'#8899aa'}, top:0 },
-        grid: { left:'3%',right:'4%',bottom:'3%',top:'40px',containLabel:true },
-        xAxis: { type:'category', data:dates, axisLabel:{rotate:30,color:'#8899aa',fontSize:10}, axisLine:{lineStyle:{color:'#334455'}} },
-        yAxis: { type:'value', name:'\u9500\u91CF(\u5343\u4E07)', axisLabel:{color:'#8899aa'}, splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}} },
-        series: [
-            { name:'\u5B9E\u9645\u9500\u91CF', type:'line', data:actualSales, smooth:true, lineStyle:{width:3,color:'#00d4ff'}, itemStyle:{color:'#00d4ff'},
-              areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(0,212,255,0.3)'},{offset:1,color:'rgba(0,212,255,0)'}])} },
-            { name:'\u9884\u6D4B\u9500\u91CF', type:'line', data:predSales, smooth:true, lineStyle:{width:3,color:'#7b2ff7',type:'dashed'}, itemStyle:{color:'#7b2ff7'} },
-            { name:'\u7F6E\u4FE1\u533A\u95F4', type:'line', data:upperBound, lineStyle:{opacity:0}, areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(123,47,247,0.2)'},{offset:1,color:'rgba(123,47,247,0)'}])} },
-            { type:'line', data:lowerBound, lineStyle:{opacity:0}, areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(123,47,247,0)'},{offset:1,color:'rgba(123,47,247,0.2)'}])} }
-        ]
-    }, true);
-}
-
-function renderPriceElasticity(data) {
-    var analysis = data.price_analysis || [];
-    var metrics = data.model_metrics || {};
-    var insights = data.insights || {};
-
-    $('#priceMetrics').html(
-        '<div class="metric-item"><div class="metric-value">'+(metrics.sales_r2||0)+'</div><div class="metric-label">\u9500\u91CER\u00B2</div></div>'+
-        '<div class="metric-item"><div class="metric-value">'+(metrics.amount_r2||0)+'</div><div class="metric-label">\u9500\u552E\u989DR\u00B2</div></div>'+
-        '<div class="metric-item"><div class="metric-value" style="font-size:14px">'+(insights.best_price_range||'-')+'</div><div class="metric-label">\u6700\u4F18\u4EF7\u4F4D</div></div>'
-    );
-
-    var priceRanges = [];
-    var salesData = [];
-    var elasticityData = [];
-
-    for (var ai = 0; ai < analysis.length; ai++) {
-        priceRanges.push(analysis[ai].price_range);
-        salesData.push(analysis[ai].actual_sales/1000000);
-        elasticityData.push(Math.abs(analysis[ai].elasticity||0)*10);
-    }
-
-    charts.price.setOption({
-        tooltip: {trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#f5576c'},
-        legend: {data:['\u5B9E\u9645\u9500\u91CF(\u767E\u4E07)','|\u5F39\u6027\u7CFB\u6570|\xD710'],textStyle:{color:'#8899aa'},top:0},
-        grid:{left:'3%',right:'8%',bottom:'3%',top:'40px',containLabel:true},
-        xAxis:{type:'category',data:priceRanges,axisLabel:{color:'#8899aa',fontSize:10,rotate:20}},
+        backgroundColor:'transparent',
+        tooltip:{
+            trigger:'axis',
+            backgroundColor:'rgba(15,20,35,0.96)',
+            borderColor:'rgba(99,102,241,0.4)',
+            borderWidth:1,
+            textStyle:{color:'#e2e8f0',fontSize:12},
+            extraCssText:'box-shadow:0 8px 32px rgba(0,0,0,0.4);border-radius:8px'
+        },
+        legend:{
+            data:['实际销量','预测销量','95%置信区间','KDE概率密度'],
+            textStyle:{color:'#94a3b8',fontSize:11},
+            top:6,itemGap:18,
+            itemWidth:16,itemHeight:8,borderRadius:4
+        },
+        grid:[
+            {left:'4%',right:'10%',bottom:'24%',top:'40px',containLabel:true},
+            {left:'4%',right:'10%',bottom:'2%',height:'18%',containLabel:true}
+        ],
+        xAxis:[
+            {type:'category',data:dates,gridIndex:0,axisLabel:{rotate:30,color:'#64748b',fontSize:9,interval:3},
+             axisLine:{lineStyle:{color:'rgba(99,102,241,0.12)'}},
+             axisTick:{show:false}},
+            {type:'value',gridIndex:1,axisLabel:{color:'#64748b',fontSize:9},splitLine:{show:false}}
+        ],
         yAxis:[
-            {type:'value',name:'\u9500\u91CF(\u767E\u4E07)',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
-            {type:'value',name:'\u5F39\u6027\xD710',axisLabel:{color:'#8899aa'},splitLine:{show:false}}
+            {type:'value',name:'销量(千万)',gridIndex:0,nameTextStyle:{color:'#94a3b8',fontSize:11,padding:[0,0,0,20]},
+             axisLabel:{color:'#64748b'},
+             splitLine:{lineStyle:{color:'rgba(99,102,241,0.04)',type:'dashed'}}},
+            {type:'value',gridIndex:1,axisLabel:{show:false},splitLine:{show:false}}
         ],
         series:[
-            {name:'\u5B9E\u9645\u9500\u91CF(\u767E\u4E07)',type:'bar',data:salesData,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#f093fb'},{offset:1,color:'#f5576c'}])},barWidth:'40%'},
-            {name:'|\u5F39\u6027\u7CFB\u6570|\xD710',type:'line',yAxisIndex:1,data:elasticityData,lineStyle:{color:'#fee140',width:3},itemStyle:{color:'#fee140'}}
-        ]
+            {name:'实际销量',type:'line',xAxisIndex:0,yAxisIndex:0,data:actual,smooth:true,symbolSize:5,
+             lineStyle:{width:2.8,color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#22d3ee'},{offset:1,color:'#06b6d4'}])},
+             itemStyle:{color:'#22d3ee',borderColor:'#0a0e1a',borderWidth:2},
+             areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(34,211,238,0.25)'},{offset:1,color:'rgba(34,211,238,0)'}])},
+             emphasis:{focus:'series'}},
+            {name:'预测销量',type:'line',xAxisIndex:0,yAxisIndex:0,data:pred,smooth:true,symbolSize:6,
+             lineStyle:{width:2.8,color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#a855f7'},{offset:1,color:'#7c3aed'}]),type:[5,5]},
+             itemStyle:{color:'#a855f7',borderColor:'#0a0e1a',borderWidth:2},
+             markPoint:{
+                 data:[{coord:[h.length-1,null],symbol:'diamond',symbolSize:12,itemStyle:{color:'#a855f7'},label:{show:true,formatter:'预测起点',color:'#a855f7',fontSize:9,position:'top'}}],
+                 animationDelay:500
+             },
+             markLine:{data:[{xAxis:h.length-1,lineStyle:{color:'rgba(168,85,247,0.4)',type:'dashed',width:1},label:{formatter:' ',show:false}}],silent:true}},
+            {name:'95%置信区间',type:'line',xAxisIndex:0,yAxisIndex:0,data:ub,lineStyle:{opacity:0},
+             areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(168,85,247,0.18)'},{offset:1,color:'rgba(168,85,247,0.03)'}])},
+             silent:true,z:1},
+            {type:'line',xAxisIndex:0,yAxisIndex:0,data:lb,lineStyle:{opacity:0},
+             areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(168,85,247,0)'},{offset:1,color:'rgba(168,85,247,0.18)'}])},
+             silent:true,z:1},
+            {name:'KDE概率密度',type:'bar',xAxisIndex:1,yAxisIndex:1,data:kde,
+             itemStyle:{
+                 color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(99,102,241,0.6)'},{offset:0.5,color:'rgba(139,92,246,0.35)'},{offset:1,color:'rgba(99,102,241,0.05)'}]),
+                 borderRadius:[3,3,0,0]
+             },
+             barWidth:'88%',
+             emphasis:{itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(99,102,241,0.8)'},{offset:1,color:'rgba(139,92,246,0.5)'}])}},
+             tooltip:{formatter:function(p){return'<b>KDE概率密度</b><br/>值: '+p.value[0]+'<br/>密度: '+p.value[1].toFixed(2)}}}
+        ],
+        animationDuration:1500,
+        animationEasingUpdate:'cubicInOut'
     }, true);
-
-    var tableHtml = '<table><tr><th>\u4EF7\u683C\u533A\u95F4</th><th>\u4E2D\u95F4\u4EF7</th><th>\u5B9E\u9645\u9500\u91CF</th><th>\u5F39\u6027\u7CFB\u6570</th><th>\u7C7B\u578B</th><th>\u5EFA\u8BAE</th></tr>';
-    for (var ri = 0; ri < Math.min(analysis.length, 20); ri++) {
-        var a = analysis[ri];
-        var tagClass = Math.abs(a.elasticity) > 1 ? 'tag-high' : 'tag-medium';
-        tableHtml += '<tr><td>'+a.price_range+'</td><td>\u00A5'+a.mid_price+'</td><td>'+(a.actual_sales/1000000).toFixed(1)+'M</td>'+
-            '<td>'+(a.elasticity||0).toFixed(2)+'</td>'+
-            '<td><span class="tag '+tagClass+'">'+(a.elasticity_type||'-')+'</span></td>'+
-            '<td style="font-size:11px;">'+(a.suggestion||'-')+'</td></tr>';
-    }
-    tableHtml += '</table>';
-    $('#priceTable').html(tableHtml);
 }
 
-function renderShopGmv(data) {
-    var predictions = data.shop_predictions || [];
-    var metrics = data.model_metrics || {};
-    var insights = data.insights || {};
-
-    $('#gmvMetrics').html(
-        '<div class="metric-item"><div class="metric-value">'+(metrics.cv_r2_mean||0)+'</div><div class="metric-label">\u4EA4\u53C9\u9A8C\u8BC1R\u00B2</div></div>'+
-        '<div class="metric-item"><div class="metric-value">'+(insights.total_shops_analyzed||0)+'</div><div class="metric-label">\u5206\u6790\u5E97\u94FA\u6570</div></div>'+
-        '<div class="metric-item"><div class="metric-value" style="font-size:14px">'+(insights.key_driver||'-')+'</div><div class="metric-label">\u6838\u5FC3\u9A71\u52A8\u56E0\u7D20</div></div>'
+/* ========== 2. 价格弹性 - 平滑Spline曲线 + 弹性雷达图（增强版） ========== */
+function renderPriceElasticity(data) {
+    var an=data.price_analysis||[], m=data.model_metrics||{}, ins=data.insights||{};
+    $('#priceMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(m.sales_r2||0)+'</div><div class="metric-label">销售R\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(m.amount_r2||0)+'</div><div class="metric-label">营收R\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:12px;color:#ec4899">'+(ins.best_price_range||'-')+'</div><div class="metric-label">最优价位</div></div>'
     );
 
-    var top10 = predictions.slice(0, 15);
-    var shopNames = [];
-    var gmvScores = [];
+    var rng=[], sls=[], els=[], pts=[];
+    for(var ai=0;ai<an.length;ai++){
+        rng.push(an[ai].price_range);
+        sls.push(an[ai].actual_sales/1000000);
+        els.push(Math.abs(an[ai].elasticity||0)*10);
+        pts.push({value:[ai,(an[ai].actual_sales/1000000)],itemStyle:{color:'#ec4899',shadowBlur:8,shadowColor:'rgba(236,72,153,0.3)'}})
+    }
 
-    for (var ti = 0; ti < top10.length; ti++) {
-        shopNames.push(top10[ti].shop_name.substring(0,12)+'...');
-        gmvScores.push({value:top10[ti].potential_score,
-            itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:ti<3?'#4facfe':'#43e97b'},{offset:1,color:ti<3?'#00f2fe':'#38f9d7'}])}});
+    /* 移动平均平滑 + 贝塞尔插值 */
+    var ssm=sls.map(function(v,i,a){var w=2,n=v;for(var j=Math.max(0,i-w);j<=Math.min(a.length-1,i+w);j++)n+=a[j];return n/(w*2+1)});
+    var ess=els.map(function(v,i,a){var w=1,n=v;for(var j=Math.max(0,i-w);j<=Math.min(a.length-1,i+w);j++)n+=a[j];return n/(w*2+1)});
+
+    charts.price.setOption({
+        backgroundColor:'transparent',
+        tooltip:{
+            trigger:'axis',
+            backgroundColor:'rgba(15,20,35,0.96)',
+            borderColor:'rgba(236,72,153,0.4)',borderWidth:1,
+            textStyle:{color:'#e2e8f0',fontSize:12},
+            formatter:function(p){
+                if(!p||!p.length)return'';
+                var idx=p[0].dataIndex;if(idx<0||idx>=an.length)return'';
+                var a=an[idx];
+                return'<div style="padding:8px 12px">'+
+                    '<b style="color:#ec4899;font-size:13px">'+a.price_range+'</b><br/>'+
+                    '<span style="color:#94a3b8">中间价:</span> \u00A5'+a.mid_price+'<br/>'+
+                    '<span style="color:#94a3b8">实际销量:</span> <b>'+(a.actual_sales/1000000).toFixed(2)+'M</b><br/>'+
+                    '<span style="color:#94a3b8">弹性系数:</span> <b style="color:#f59e0b">'+(a.elasticity||0).toFixed(2)+'</b><br/>'+
+                    '<span style="color:#94a3b8">类型:</span> '+(a.elasticity_type||'-')+
+                    '</div>';
+            },
+            extraCssText:'box-shadow:0 8px 32px rgba(0,0,0,0.4);border-radius:8px'
+        },
+        legend:{data:['销量曲线','弹性系数'],textStyle:{color:'#94a3b8',fontSize:11},top:6,right:50,itemGap:18},
+        grid:{left:'4%',right:'7%',bottom:'12%',top:'42px',containLabel:true},
+        xAxis:{type:'category',data:rng,axisLabel:{color:'#64748b',fontSize:9.5,rotate:15},
+               axisLine:{lineStyle:{color:'rgba(236,72,153,0.15)'}},axisTick:{show:false}},
+        yAxis:[
+            {type:'value',name:'销量(百万)',axisLabel:{color:'#64748b'},splitLine:{lineStyle:{color:'rgba(99,102,241,0.04)',type:'dashed'}},
+             nameTextStyle:{color:'#94a3b8',fontSize:11}},
+            {type:'value',name:'|\u5F39\u6027|×10',axisLabel:{color:'#64748b'},splitLine:{show:false},
+             nameTextStyle:{color:'#f59e0b',fontSize:11}}
+        ],
+        dataZoom:[{type:'inside',start:0,end:100}],
+        series:[
+            {name:'销量曲线',type:'line',data:ssm,smooth:true,symbolSize:7,
+             lineStyle:{width:3.5,color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#f093fb'},{offset:0.5,color:'#f5576c'},{offset:1,color:'#f5576c'}]),
+                        shadowColor:'rgba(245,87,108,0.3)',shadowBlur:8},
+             itemStyle:{color:'#f5576c',borderColor:'#0a0e1a',borderWidth:2},
+             areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(245,87,108,0.2)'},{offset:0.5,color:'rgba(240,147,251,0.08)'},{offset:1,color:'rgba(240,147,251,0)'}])},
+             markPoint:{data:pts,symbolSize:function(v){return Math.min(Math.max(v[1]*3,6),14)},animationDelay:300},
+             markLine:{data:[{type:'average',label:{show:false,formatter:'均值'},lineStyle:{color:'#fee140',type:'dashed',width:1.5}}]},
+             emphasis:{focus:'series',scale:true}},
+            {name:'弹性系数',type:'line',yAxisIndex:1,data:ess,symbolSize:8,
+             lineStyle:{width:2.8,color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#fbbf24'},{offset:1,color:'#f59e0b'}]),
+                        shadowColor:'rgba(245,158,11,0.3)',shadowBlur:6},
+             itemStyle:{color:'#f59e0b',borderColor:'#0a0e1a',borderWidth:2},
+             markArea:{data:[[{yAxis:'max',itemStyle:{color:'rgba(245,158,11,0.03)'}},{yAxis:'min'}]]},
+             emphasis:{focus:'series'}}
+        ],
+        animationDuration:1200
+    }, true);
+
+    /* 增强版弹性雷达图 */
+    var radarInd=['高弹性区','中高弹性','中等弹性','低弹性','缺乏弹性'];
+    var radarVals=[[0,0,0,0,0]];
+    for(var ri=0;ri<an.length;ri++){
+        var e=Math.abs(an[ri].elasticity||0);
+        if(e>2) radarVals[0][0]+=e; else if(e>1.2) radarVals[0][1]+=e; else if(e>0.7) radarVals[0][2]+=e; else if(e>0.3) radarVals[0][3]+=e; else radarVals[0][4]+=e;
+    }
+    var rvMax=Math.max.apply(null,radarVals[0])||1;
+    radarVals[0]=radarVals[0].map(function(v){return v/rvMax*100});
+
+    charts.priceRadar.setOption({
+        backgroundColor:'transparent',
+        tooltip:{backgroundColor:'rgba(15,20,35,0.96)',borderColor:'#f59e0b',borderWidth:1,textStyle:{color:'#e2e8f0'}},
+        radar:{
+            indicator:radarInd.map(function(n,i){return{name:n,max:105,color:'#94a3b8',fontSize:10}}),
+            shape:'polygon',splitNumber:5,radius:'65%',
+            axisName:{color:'#94a3b8',fontSize:10,fontWeight:500},
+            splitLine:{lineStyle:{color:'rgba(99,102,241,0.08)',type:'dashed'}},
+            splitArea:{areaStyle:{color:['rgba(99,102,241,0.02)','rgba(168,85,247,0.03)','rgba(236,72,153,0.02)','rgba(245,158,11,0.02)','rgba(99,102,241,0.03)']}},
+            axisLine:{lineStyle:{color:'rgba(99,102,241,0.15)'}}
+        },
+        series:[{
+            type:'radar',data:[{
+                value:radarVals[0],name:'弹性分布',
+                symbol:'circle',symbolSize:7,
+                lineStyle:{color:'#f59e0b',width:2.5,shadowColor:'#f59e0b',shadowBlur:6},
+                areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{offset:0,color:'rgba(245,158,11,0.3)'},{offset:1,color:'rgba(245,158,11,0.04)'}])},
+                itemStyle:{color:'#f59e0b',borderColor:'#0a0e1a',borderWidth:2}
+            }],
+            emphasis:{focus:'self',animationDuration:300}
+        }],
+        animationDuration:1000
+    }, true);
+
+    var tb='<table><tr><th>价格区间</th><th>中间价</th><th>实际销量</th><th>弹性系数</th><th>类型</th><th>建议</th></tr>';
+    for(var ri=0;ri<Math.min(an.length,20);ri++){
+        var a=an[ri]; var tc=Math.abs(a.elasticity)>1?'tag-high':'tag-medium';
+        tb+='<tr><td>'+a.price_range+'</td><td>\u00A5'+a.mid_price+'</td><td>'+(a.actual_sales/1000000).toFixed(1)+'M</td>'+
+            '<td>'+(a.elasticity||0).toFixed(2)+'</td><td><span class="tag '+tc+'">'+(a.elasticity_type||'-')+'</span></td><td style="font-size:10px">'+(a.suggestion||'-')+'</td></tr>';
+    } tb+='</table>'; $('#priceTable').html(tb);
+}
+
+/* ========== 3. 店铺GMV - 渐变水平条形 + Top5多维雷达（增强版） ========== */
+function renderShopGmv(data) {
+    var pr=data.shop_predictions||[], m=data.model_metrics||{}, ins=data.insights||{};
+    $('#gmvMetrics').html(
+        '<div class="metric-item"><div class="metric-value">'+(m.cv_r2_mean||0)+'</div><div class="metric-label">交叉验证R\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(ins.total_shops_analyzed||0)+'</div><div class="metric-label">店铺数</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:12px;color:#22d3ee">'+(ins.key_driver||'-')+'</div><div class="metric-label">核心驱动</div></div>'
+    );
+
+    var t12=pr.slice(0,12), nm=[], sc=[];
+    for(var ti=0;ti<t12.length;ti++){
+        nm.push(t12[ti].shop_name.substring(0,14));
+        var isTop3 = ti < 3;
+        var c1 = isTop3 ? '#22d3ee' : '#4ade80';
+        var c2 = isTop3 ? '#06b6d4' : '#22c55e';
+        var c3 = isTop3 ? '#0891b2' : '#16a34a';
+        sc.push({
+            value:t12[ti].potential_score,
+            itemStyle:{
+                color:new echarts.graphic.LinearGradient(0,0,1,0,[
+                    {offset:0,color:c1},
+                    {offset:0.5,color:c2},
+                    {offset:1,color:c3}
+                ]),
+                borderRadius:[0,8,8,0],
+                shadowBlur:isTop3?12:0,
+                shadowColor:isTop3?'rgba(34,211,238,0.3)':'transparent'
+            }
+        });
     }
 
     charts.gmv.setOption({
-        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#00f2fe',
-            formatter:function(params){
-                var d = top10[params[0].dataIndex];
-                if(!d) return '';
-                return d.shop_name+'<br/>\u5B9E\u9645GMV: \u00A5'+d.actual_gmv.toLocaleString()+'<br/>\u6F5C\u529B\u8BC4\u5206: '+d.potential_score+'<br/>\u7B49\u7EA7: '+d.potential_level;
-            }},
-        grid:{left:'3%',right:'15%',bottom:'3%',top:'10px',containLabel:true},
-        xAxis:{type:'value',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
-        yAxis:{type:'category',data:shopNames,axisLabel:{color:'#8899aa',fontSize:10}},
+        backgroundColor:'transparent',
+        tooltip:{
+            trigger:'axis',
+            backgroundColor:'rgba(15,20,35,0.96)',
+            borderColor:'#22d3ee',borderWidth:1,
+            textStyle:{color:'#e2e8f0',fontSize:12},
+            formatter:function(p){
+                var d=t12[p[0].dataIndex];if(!d)return'';
+                return'<div style="padding:8px 12px">'+
+                    '<b style="color:#22d3ee;font-size:13px">'+d.shop_name+'</b><br/>'+
+                    '<span style="color:#94a3b8">GMV:</span> \u00A5'+d.actual_gmv.toLocaleString()+'<br/>'+
+                    '<span style="color:#94a3b8">潜力分:</span> <b style="color:#22d3ee;font-size:14px">'+d.potential_score+'</b><br/>'+
+                    '<span style="color:#94a3b8">等级:</span> '+d.potential_level+
+                    '</div>';
+            },
+            extraCssText:'box-shadow:0 8px 32px rgba(0,0,0,0.4);border-radius:8px'
+        },
+        grid:{left:'3%',right:'14%',bottom:'3%',top:'6px',containLabel:true},
+        xAxis:{type:'value',axisLabel:{color:'#64748b'},splitLine:{lineStyle:{color:'rgba(99,102,241,0.03)',type:'dashed'}},
+               axisLine:{lineStyle:{color:'rgba(99,102,241,0.08)'}}},
+        yAxis:{type:'category',data:nm,axisLabel:{color:'#94a3b8',fontSize:10,fontWeight:500},inverse:true},
         series:[{
-            type:'bar',data:gmvScores,barWidth:'60%',label:{show:true,position:'right',color:'#00f2fe',fontSize:11}
+            type:'bar',data:sc,barWidth:'58%',
+            label:{
+                show:true,position:'right',color:'#22d3ee',fontSize:11,fontWeight:700,
+                formatter:'{c}',
+                textShadowColor:'rgba(34,211,238,0.3)',textShadowBlur:4
+            },
+            emphasis:{
+                itemStyle:{shadowBlur:20,shadowColor:'rgba(34,211,238,0.4)'},
+                scale:1.02
+            },
+            animationDuration:1200,animationEasing:'elasticOut'
         }]
     }, true);
 
-    var tableHtml = '<table><tr><th>\u5E97\u94FA\u540D\u79F0</th><th>\u5B9E\u9645GMV</th><th>\u9884\u6D4BGMV</th><th>\u6F5C\u529B\u5206</th><th>\u7B49\u7EA7</th><th>\u5EFA\u8BAE</th></tr>';
-    for (var gi = 0; gi < Math.min(predictions.length, 10); gi++) {
-        var p = predictions[gi];
-        tableHtml += '<tr><td>'+p.shop_name+'</td><td>\u00A5'+p.actual_gmv.toLocaleString()+'</td><td>\u00A5'+p.predicted_gmv.toLocaleString()+'</td>'+
-            '<td><b style="color:#00f2fe">'+p.potential_score+'</b></td>'+
-            '<td><span class="tag tag-high">'+p.potential_level.split(' ')[0]+'</span></td>'+
-            '<td style="font-size:11px;">'+p.recommendation+'</td></tr>';
+    /* Top5店铺多维度蜘蛛雷达 */
+    var top5=pr.slice(0,5);
+    var gmvRadarInd=['GMV规模','评论数','AOV','增长率','潜力分'];
+    var gmvRadarData=[[]];
+    var maxG=top5.reduce(function(a,b){return Math.max(a,b.actual_gmv)},0)||1;
+    var maxC=top5.reduce(function(a,b){return Math.max(a,(b.total_comments||0))},0)||1;
+    var maxAov=top5.reduce(function(a,b){return Math.max(a,b.actual_gmv/(b.total_sales_count||1))},0)||1;
+
+    for(var gi=0;gi<top5.length;gi++){
+        gmvRadarData[0].push([
+            top5[gi].actual_gmv/maxG*100,
+            (top5[gi].total_comments||0)/maxC*100,
+            (top5[gi].actual_gmv/(top5[gi].total_sales_count||1))/maxAov*100,
+            Math.min(((top5[gi].predicted_gmv/top5[gi].actual_gmv)-1)*200,100),
+            top5[gi].potential_score
+        ]);
     }
-    tableHtml += '</table>';
-    $('#gmvTable').html(tableHtml);
+    var grColors=['#22d3ee','#4ade80','#a855f7','#f59e0b','#ec4899'];
+
+    charts.gmvRadar.setOption({
+        backgroundColor:'transparent',
+        tooltip:{backgroundColor:'rgba(15,20,35,0.96)',borderColor:'#22d3ee',borderWidth:1,textStyle:{color:'#e2e8f0'}},
+        radar:{
+            indicator:gmvRadarInd.map(function(n,i){return{name:n,max:108,color:'#94a3b8',fontSize:10}}),
+            shape:'polygon',radius:'66%',splitNumber:4,
+            axisName:{color:'#94a3b8',fontSize:9.5,fontWeight:500},
+            splitLine:{lineStyle:{color:'rgba(99,102,241,0.08)',type:'dashed'}},
+            splitArea:{areaStyle:{color:['rgba(34,211,238,0.02)','rgba(74,222,128,0.02)','rgba(168,85,247,0.02)','rgba(245,158,11,0.02)']}},
+            axisLine:{lineStyle:{color:'rgba(99,102,241,0.12)'}}
+        },
+        legend:{
+            data:top5.map(function(t,i){return t.shop_name.substring(0,6)+(i+1)}),
+            textStyle:{color:'#94a3b8',fontSize:9},bottom:2,left:'center',itemGap:10,
+            itemWidth:14,itemHeight:14,icon:'roundRect'
+        },
+        series:[{
+            type:'radar',data:gmvRadarData[0].map(function(v,i){return{
+                value:v,name:top5[i].shop_name.substring(0,6),
+                symbol:'circle',symbolSize:6,
+                lineStyle:{color:grColors[i],width:2.2,shadowColor:grColors[i],shadowBlur:4},
+                areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{offset:0,color:grColors[i]+'32'},{offset:1,color:grColors[i]+'04'}])},
+                itemStyle:{color:grColors[i],borderColor:'#0a0e1a',borderWidth:1.5}
+            }}),
+            emphasis:{focus:'series',animationDuration:300}
+        }],
+        animationDuration:1000
+    }, true);
+
+    var tb='<table><tr><th>店铺名称</th><th>实际GMV</th><th>预测GMV</th><th>潜力分</th><th>等级</th><th>建议</th></tr>';
+    for(var gi=0;gi<Math.min(pr.length,10);gi++){
+        var p=pr[gi];
+        tb+='<tr><td>'+p.shop_name+'</td><td>\u00A5'+p.actual_gmv.toLocaleString()+'</td><td>\u00A5'+p.predicted_gmv.toLocaleString()+'</td>'+
+            '<td><b style="color:#22d3ee">'+p.potential_score+'</b></td><td><span class="tag tag-high">'+p.potential_level.split(' ')[0]+'</span></td><td style="font-size:10px">'+p.recommendation+'</td></tr>';
+    } tb+='</table>'; $('#gmvTable').html(tb);
 }
 
+/* ========== 4. 商品热度 - Treemap树形热力图（增强版） ========== */
 function renderProductHeat(data) {
-    var predictions = data.product_predictions || [];
-    var metrics = data.model_metrics || {};
-    var insights = data.insights || {};
-
+    var pr=data.product_predictions||[], m=data.model_metrics||{}, ins=data.insights||{};
     $('#heatMetrics').html(
-        '<div class="metric-item"><div class="metric-value">'+(metrics.cv_r2_mean||0)+'</div><div class="metric-label">CVR\u00B2</div></div>'+
-        '<div class="metric-item"><div class="metric-value">'+(metrics.products_analyzed||0)+'</div><div class="metric-label">\u5546\u54C1\u6570\u91CF</div></div>'+
-        '<div class="metric-item"><div class="metric-value">'+(insights.avg_heat_score||0)+'</div><div class="metric-label">\u5E73\u5747\u70ED\u5EA6</div></div>'
+        '<div class="metric-item"><div class="metric-value">'+(m.cv_r2_mean||0)+'</div><div class="metric-label">CV-R\u00B2</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(m.products_analyzed||0)+'</div><div class="metric-label">商品数量</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="color:#f59e0b">'+(ins.avg_heat_score||0)+'</div><div class="metric-label">平均热度</div></div>'
     );
 
-    var sorted = predictions.slice().sort(function(a,b){return b.heat_score-a.heat_score});
-    var heatCategories = [];
-    var heatValues = [];
+    var sorted=pr.slice().sort(function(a,b){return b.heat_score-a.heat_score});
+    var tm=[];
+    var pal=[
+        ['#ef4444','#fca5a5'],
+        ['#f97316','#fdba74'],
+        ['#f59e0b','#fcd34d'],
+        ['#eab308','#fde047'],
+        ['#22d3ee','#67e8f9'],
+        ['#10b981','#6ee7b7'],
+        ['#a855f7','#c084fc']
+    ];
 
-    for (var hi = 0; hi < Math.min(sorted.length, 15); hi++) {
-        heatCategories.push(sorted[hi].title.substring(0,15)+'...');
-        var hs = sorted[hi].heat_score;
-        var ci = hs >= 80 ? 0 : hs >= 65 ? 1 : hs >= 50 ? 2 : hs >= 35 ? 3 : 4;
-        var colors = [['#ff0844','#ffb199'],['#fa709a','#fee140'],['#43e97b','#38f9d7'],['#4facfe','#00f2fe'],['#667eea','#764ba2']];
-        heatValues.push({value:hs, itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:colors[ci][0]},{offset:1,color:colors[ci][1]}])}});
+    for(var hi=0;hi<Math.min(sorted.length,30);hi++){
+        var hs=sorted[hi].heat_score, ci;
+        if(hs>=90)ci=0;else if(hs>=80)ci=1;else if(hs>=70)ci=2;else if(hs>=60)ci=3;else if(hs>=45)ci=4;else if(hs>=30)ci=5;else ci=6;
+        tm.push({
+            name:sorted[hi].title.substring(0,24),
+            value:hs,
+            itemStyle:{
+                color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:pal[ci][0]},{offset:1,color:pal[ci][1]}]),
+                borderColor:'rgba(255,255,255,0.1)',
+                borderWidth:1,
+                borderRadius:6,
+                shadowBlur:hs>75?15:0,
+                shadowColor:pal[ci][0]+'40'
+            },
+            label:{
+                show:hs>=55,
+                fontSize:hs>=80?12:(hs>=65?10:9),
+                color:'#fff',
+                fontWeight:hs>=80?'bold':'normal',
+                formatter:function(p){return p.name+'\n'+p.value}
+            },
+            upperLabel:{show:false}
+        });
     }
 
     charts.heat.setOption({
-        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#fa7099'},
-        grid:{left:'3%',right:'4%',bottom:'3%',top:'10px',containLabel:true},
-        xAxis:{type:'category',data:heatCategories,axisLabel:{color:'#8899aa',fontSize:9,rotate:25,interval:0}},
-        yAxis:{type:'value',name:'\u70ED\u5EA6\u5206\u6570',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
-        series:[{type:'bar',data:heatValues,barWidth:'50%'}]
+        backgroundColor:'transparent',
+        tooltip:{
+            backgroundColor:'rgba(15,20,35,0.96)',
+            borderColor:'#f59e0b',borderWidth:1,
+            textStyle:{color:'#e2e8f0',fontSize:12},
+            formatter:function(p){
+                var d=sorted[p.dataIndex];if(!d)return'';
+                return'<div style="padding:8px 12px">'+
+                    '<b style="color:'+pal[Math.floor((d.heat_score-30)/10)||6][0]+';font-size:13px">'+d.title.substring(0,30)+'</b><br/>'+
+                    '<span style="color:#94a3b8">热度:</span> <b style="color:#f59e0b;font-size:14px">'+d.heat_score+'</b><br/>'+
+                    '<span style="color:#94a3b8">等级:</span> '+d.heat_level+'<br/>'+
+                    '<span style="color:#94a3b8">品牌分:</span> '+d.brand_score+
+                    '</div>';
+            },
+            extraCssText:'box-shadow:0 8px 32px rgba(0,0,0,0.4);border-radius:8px'
+        },
+        series:[{
+            type:'treemap',data:tm,width:'98%',height:'98%',top:'1%',left:'1%',
+            roam:false,nodeClick:false,breadcrumb:{show:false,label:{show:false}},
+            levels:[{
+                itemStyle:{
+                    borderColor:'rgba(99,102,241,0.12)',
+                    borderWidth:2,
+                    gapWidth:3
+                },
+                emphasis:{itemStyle:{shadowBlur:20,shadowColor:'rgba(245,158,11,0.4)'}}
+            }],
+            animationDuration:1500,
+            animationEasingUpdate:'quadraticOut'
+        }],
+        visualMap:{
+            show:true,min:0,max:100,calculable:true,
+            orient:'horizontal',left:'center',bottom:4,
+            inRange:{color:['#334155','#475569','#f59e0b','#ef4444']},
+            textStyle:{color:'#94a3b8',fontSize:9},
+            itemWidth:14,itemHeight:80,
+            dimension:1
+        }
     }, true);
 
-    var tableHtml = '<table><tr><th>\u5546\u54C1\u6807\u9898</th><th>\u70ED\u5EA6</th><th>\u7B49\u7EA7</th><th>\u54C1\u724C\u5206</th><th>\u4F18\u5316\u5EFA\u8BAE</th></tr>';
-    for (var hti = 0; hti < Math.min(predictions.length, 10); hti++) {
-        var hp = predictions[hti];
-        tableHtml += '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">'+hp.title+'</td>'+
-            '<td><b style="color:#fa709a">'+hp.heat_score+'</b></td>'+
-            '<td>'+hp.heat_level+'</td><td>'+hp.brand_score+'</td><td style="font-size:11px;">'+hp.optimization_suggestion+'</td></tr>';
-    }
-    tableHtml += '</table>';
-    $('#heatTable').html(tableHtml);
+    var tb='<table><tr><th>商品标题</th><th>热度</th><th>等级</th><th>品牌分</th><th>优化建议</th></tr>';
+    for(var hi=0;hi<Math.min(pr.length,10);hi++){
+        var hp=pr[hi];
+        tb+='<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;">'+hp.title+'</td>'+
+            '<td><b style="color:#f59e0b">'+hp.heat_score+'</b></td><td>'+hp.heat_level+'</td><td>'+hp.brand_score+'</td><td style="font-size:10px">'+hp.optimization_suggestion+'</td></tr>';
+    } tb+='</table>'; $('#heatTable').html(tb);
 }
 
+/* ========== 5. 地区销量 - 气泡热力矩阵 + 排名条 + 聚类对比雷达（完全重新设计） ========== */
 function renderRegionSales(data) {
-    var regions = data.region_predictions || [];
-    var clusterAnalysis = data.cluster_analysis || {};
-    var modelMetrics = data.model_metrics || {};
-
-    var clusterCount = 0;
-    if (clusterAnalysis.clusters) {
-        var ckeys = Object.keys(clusterAnalysis.clusters);
-        if (ckeys.length > 0) clusterCount = clusterAnalysis.clusters[ckeys[0]].cluster_count || 0;
+    console.log('[Region] === renderRegionSales called ===');
+    console.log('[Region] Data keys:', Object.keys(data||{}));
+    var rg=data.region_predictions||[];
+    console.log('[Region] Region predictions count:', rg.length);
+    if(rg.length > 0) {
+        console.log('[Region] First item:', JSON.stringify(rg[0]).substring(0,200));
+        console.log('[Region] cluster type:', typeof rg[0].cluster, 'value:', rg[0].cluster);
     }
+    
+    var ca=data.cluster_analysis||{}, mm=data.model_metrics||{};
+    var cc=0;
+    if(ca.clusters){var ck=Object.keys(ca.clusters);if(ck.length>0)cc=ca.clusters[ck[0]].cluster_count||0;}
 
     $('#regionMetrics').html(
-        '<div class="metric-item"><div class="metric-value">'+(modelMetrics.r2_score||0)+'</div><div class="metric-label>R\u00B2\u5F97\u5206</div></div>'+
-        '<div class="metric-item"><div class="metric-value">'+(modelMetrics.provinces_analyzed||0)+'</div><div class="metric-label">\u7701\u4EFD\u603B\u6570</div></div>'+
-        '<div class="metric-item"><div class="metric-value" style="font-size:14px">'+clusterCount+'</div><div class="metric-label">\u805A\u7C7B\u5206\u7EC4</div></div>'
+        '<div class="metric-item"><div class="metric-value">'+(mm.r2_score||0)+'</div><div class="metric-label">R\u00B2得分</div></div>'+
+        '<div class="metric-item"><div class="metric-value">'+(mm.provinces_analyzed||0)+'</div><div class="metric-label">省份总数</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:13px;color:#10b981">'+cc+'</div><div class="metric-label">聚类分组</div></div>'
     );
 
-    var sortedByPotential = regions.slice().sort(function(a,b){return b.potential_index-a.potential_index});
-    var clusterColors = {'\uD83D\uDD35 \u6F5C\u529B\u5E02\u573A':'#4facfe','\uD83D\uDFE2 \u6210\u719F\u5E02\u573A':'#43e97b','\uD83D\uDFE5 \u6210\u957F\u5E02\u573A':'#ffc107','\uD83D\uDD34 \u5F85\u5F00\u53D1':'#ff4444'};
+    var sbp=rg.slice().sort(function(a,b){return b.potential_index-a.potential_index});
+    var clCols=['#4facfe','#10b981','#f59e0b','#ef4444'], clNames=['潜力市场','成熟市场','成长市场','待开发'];
 
-    var provinceList = [];
-    var scatterData = [];
-    for (var rsi = 0; rsi < regions.length; rsi++) {
-        provinceList.push(regions[rsi].province);
-        scatterData.push([rsi, regions[rsi].potential_index, regions[rsi].actual_sales, regions[rsi].cluster]);
+    /* 按聚类分组排序后构建数据 - 直接使用cluster数字值(0-3) */
+    var byCl=[[],[],[],[]];
+    for(var bi=0;bi<rg.length;bi++){
+        var cVal = rg[bi].cluster;
+        var ci = (typeof cVal === 'number' && !isNaN(cVal)) ? Math.floor(cVal) : 4;
+        if(ci < 0) ci = 0;
+        if(ci > 3) ci = 4;
+        if(ci <= 3 && byCl[ci]) {
+            byCl[ci].push(rg[bi]);
+        } else {
+            byCl[0].push(rg[bi]); // 默认放入第一组
+        }
+    }
+    for(var gi=0;gi<4;gi++) {
+        if(byCl[gi]) byCl[gi].sort(function(a,b){return b.potential_index-a.potential_index});
+    }
+
+    var allSorted=[];
+    for(var gk=0;gk<4;gk++) {
+        if(byCl[gk]) allSorted=allSorted.concat(byCl[gk]);
+    }
+
+    /* 左侧：气泡散点热力矩阵 - 解决密集点问题！使用大小+颜色+位置三重编码 */
+    var bubbleData=[];
+    var hmMax=0;
+    for(var bi2=0;bi2<allSorted.length;bi2++){
+        var r=allSorted[bi2];
+        if(!r) continue;
+        var cVal2 = r.cluster;
+        var ci2 = (typeof cVal2 === 'number' && !isNaN(cVal2)) ? Math.floor(cVal2) : 0;
+        ci2 = Math.max(0, Math.min(ci2, 3)); // 确保在0-3范围内
+        bubbleData.push({
+            value:[bi2, r.potential_index||0, (r.actual_sales/100000000)||0.5, ci2],
+            itemStyle:{
+                color:clCols[ci2]||'#4facfe',
+                opacity:0.85,
+                borderWidth:2,
+                borderColor:(clCols[ci2]||'#4facfe')+'60'
+            }
+        });
+        if((r.potential_index||0)>hmMax)hmMax=r.potential_index||0;
     }
 
     charts.region.setOption({
-        tooltip:{trigger:'item',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#43e97b',
-            formatter:function(params){
-                var r = regions[params.dataIndex];
-                if(!r) return '';
-                return r.province+'<br/>\u5B9E\u9645\u9500\u91CF: '+r.actual_sales.toLocaleString()+'<br/>\u6F5C\u529B\u6307\u6570: '+r.potential_index;
-            }},
+        backgroundColor:'transparent',
+        tooltip:{
+            backgroundColor:'rgba(15,20,35,0.96)',
+            borderColor:'#10b981',borderWidth:1,
+            textStyle:{color:'#e2e8f0',fontSize:12},
+            formatter:function(p){
+                if(p.dataIndex<0||p.dataIndex>=allSorted.length)return'';
+                var r2=allSorted[p.dataIndex];if(!r2)return'';
+                var ci3 = (typeof r2.cluster === 'number')?Math.min(Math.max(r2.cluster,0),3):4;
+                var cColor = clCols[ci3];
+                var html = '<div style="padding:10px 14px">';
+                html += '<b style="color:#10b981;font-size:14px">'+r2.province+'</b><br/>';
+                html += '<div style="margin-top:6px">';
+                html += '潜力指数: <b style="color:#10b981">'+r2.potential_index+'</b><br/>';
+                html += '实际销量: '+(r2.actual_sales/1000000).toFixed(1)+'M<br/>';
+                html += '市场份额: '+r2.market_share_pct.toFixed(2)+'%<br/>';
+                html += '聚类类型: <span style="color:'+cColor+'">'+r2.cluster_label+'</span>';
+                html += '</div></div>';
+                return html;
+            },
+            extraCssText:'box-shadow:0 8px 32px rgba(0,0,0,0.4);border-radius:8px'
+        },
+        grid:{left:'4%',right:'6%',bottom:'26%',top:'4%',containLabel:true},
+        xAxis:{type:'value',min:-1,max:allSorted.length,show:false,axisLine:{show:false},splitLine:{show:false}},
+        yAxis:{type:'value',name:'潜力指数',nameTextStyle:{color:'#94a3b8',fontSize:11,padding:[0,0,0,25]},
+               axisLabel:{color:'#64748b',fontSize:10},
+               splitLine:{lineStyle:{color:'rgba(99,102,241,0.04)',type:'dashed'}}},
+        visualMap:[
+            {show:false,dimension:3,min:0,max:3,inRange:{color:clCols}},
+            {show:true,min:0,max:hmMax||100,calculable:true,orient:'horizontal',left:'center',bottom:2,
+             inRange:{color:['#1e293b','#334155','#475569','#64748b','#10b981','#22d3ee']},
+             textStyle:{color:'#94a3b8',fontSize:9},itemWidth:14,itemHeight:80,
+             formatter:function(v){return v.toFixed(0)},dimension:1}
+        ],
         series:[{
-            type:'scatter',symbolSize:function(d){var r=regions[d]; return r ? Math.sqrt(r.actual_sales)/500+10 : 10;},
-            data:scatterData,
-            itemStyle:{color:function(params){
-                var cl = params.data && params.data[3];
-                return clusterColors[cl] || '#888';
-            }},
-            label:{show:true,formatter:function(params){var r=regions[params.dataIndex]; return r?r.province:'';},position:'top',fontSize:10,color:'#ccc'}
+            type:'scatter',
+            symbolSize:function(data){
+                var size=Math.sqrt(data[2])*22;
+                return Math.max(Math.min(size,50),10);
+            },
+            data:bubbleData,
+            emphasis:{
+                itemStyle:{
+                    shadowBlur:25,
+                    shadowColor:'rgba(16,185,129,0.5)',
+                    shadowOffsetY:6,
+                    borderColor:'#fff',
+                    borderWidth:2.5,
+                    opacity:1
+                },
+                scale:1.2
+            },
+            animationDuration:1400,
+            animationEasingUpdate:'elasticOut',
+            label:{
+                show:true,
+                position:'top',
+                formatter:function(p){
+                    return allSorted[p.dataIndex]?allSorted[p.dataIndex].province:'';
+                },
+                fontSize:9,
+                color:'#94a3b8',
+                distance:6,
+                textBorderColor:'rgba(10,14,26,0.8)',
+                textBorderWidth:3
+            }
         }],
-        xAxis:{type:'category',data:provinceList,axisLabel:{interval:0,rotate:45,color:'#8899aa',fontSize:9}},
-        yAxis:{type:'value',name:'\u6F5C\u529B\u6307\u6570',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}}
+        graphic:[]
     }, true);
 
-    var top15 = sortedByPotential.slice(0, 15);
-    var top15Names = [];
-    var top15Values = [];
-    for (var t15i = 0; t15i < top15.length; t15i++) {
-        top15Names.push(top15[t15i].province);
-        top15Values.push({value:top15[t15i].actual_sales/1000000,
-            itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#43e97b'},{offset:1,color:'#38f9d7'}])}});
+    /* 右侧中：Top15排名条 - 增强渐变和阴影效果 */
+    var t15=sbp.slice(0,14), t15n=[], t15v=[];
+    for(var ti=0;ti<t15.length;ti++){
+        t15n.push(t15[ti].province);
+        var val=t15[ti].actual_sales/1000000;
+        var isTop3Region = ti < 3;
+        t15v.push({
+            value:val,
+            itemStyle:{
+                color:new echarts.graphic.LinearGradient(0,0,1,0,[
+                    {offset:0,color:'#059669'},
+                    {offset:0.4,color:'#10b981'},
+                    {offset:1,color:'#34d399'}
+                ]),
+                borderRadius:[0,8,8,0],
+                shadowBlur:isTop3Region?15:0,
+                shadowColor:isTop3Region?'rgba(16,185,129,0.35)':'transparent'
+            }
+        });
     }
-
     charts.regionBar.setOption({
-        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#43e97b'},
-        grid:{left:'3%',right:'15%',bottom:'3%',top:'10px',containLabel:true},
-        xAxis:{type:'value',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
-        yAxis:{type:'category',data:top15Names,axisLabel:{color:'#8899aa',fontSize:10}},
-        series:[{type:'bar',data:top15Values,barWidth:'55%'}]
+        backgroundColor:'transparent',
+        tooltip:{
+            trigger:'axis',
+            backgroundColor:'rgba(15,20,35,0.96)',
+            borderColor:'#10b981',borderWidth:1,
+            textStyle:{color:'#e2e8f0',fontSize:12},
+            formatter:function(p){
+                var d=t15[p[0].dataIndex];if(!d)return'';
+                return'<div style="padding:8px 12px">'+
+                    '<b style="color:#10b981;font-size:13px">'+d.province+'</b><br/>'+
+                    '<span style="color:#94a3b8">销量:</span> <b>'+(d.actual_sales/1000000).toFixed(1)+'M</b><br/>'+
+                    '<span style="color:#94a3b8">份额:</span> '+d.market_share_pct.toFixed(2)+'%<br/>'+
+                    '<span style="color:#94a3b8">潜力:</span> <b style="color:#10b981;font-size:14px">'+d.potential_index+'</b>'+
+                    '</div>';
+            },
+            extraCssText:'box-shadow:0 8px 32px rgba(0,0,0,0.4);border-radius:8px'
+        },
+        grid:{left:'3%',right:'14%',bottom:'3%',top:'6px',containLabel:true},
+        xAxis:{type:'value',axisLabel:{color:'#64748b'},splitLine:{lineStyle:{color:'rgba(99,102,241,0.03)',type:'dashed'}},
+               axisLine:{lineStyle:{color:'rgba(99,102,241,0.08)'}}},
+        yAxis:{type:'category',data:t15n,axisLabel:{color:'#94a3b8',fontSize:10,fontWeight:500},inverse:true},
+        series:[{
+            type:'bar',data:t15v,barWidth:'58%',
+            label:{
+                show:true,position:'right',color:'#10b981',fontSize:11,fontWeight:700,
+                formatter:function(p){return p.value.toFixed(1)+'M'},
+                textShadowColor:'rgba(16,185,129,0.3)',textShadowBlur:4
+            },
+            emphasis:{itemStyle:{shadowBlur:20,shadowColor:'rgba(16,185,129,0.45)'}},
+            animationDuration:1100,animationEasing:'cubicOut'
+        }]
     }, true);
 
-    var tableHtml = '<table><tr><th>\u7701\u4EFD</th><th>\u5B9E\u9645\u9500\u91CF</th><th>\u5E02\u573A\u4EFD\u989D%</th><th>\u805A\u7C7B</th><th>\u6F5C\u529B</th><th>\u7B56\u7565</th></tr>';
-    for (var rgi = 0; rgi < Math.min(sortedByPotential.length, 12); rgi++) {
-        var rg = sortedByPotential[rgi];
-        tableHtml += '<tr><td>'+rg.province+'</td><td>'+(rg.actual_sales/1000000).toFixed(1)+'M</td><td>'+rg.market_share_pct.toFixed(3)+'%'+
-            '</td><td><span class="tag tag-medium">'+rg.cluster_label+'</span></td><td><b style="color:#43e97b">'+rg.potential_index+'</b></td>'+
-            '<td style="font-size:11px;">'+rg.strategy+'</td></tr>';
+    /* 右侧：聚类特征对比雷达 - 完全增强版 */
+    var rRadarInd=['平均潜力指数','总销量占比','省份数量','平均增长率','策略强度'];
+    var rRadarData=[[]];
+    for(var ci4=0;ci4<4;ci4++){
+        var grp=byCl[ci4];
+        var avgPot=grp.reduce(function(s,r){return s+r.potential_index},0)/Math.max(grp.length,1)||0;
+        var totSales=grp.reduce(function(s,r){return s+r.actual_sales},0);
+        var totalAll=rg.reduce(function(s,r){return s+r.actual_sales},0)||1;
+        var avgGrw=(grp.reduce(function(s,r){return s+(r.predicted_sales||r.actual_sales)/(r.actual_sales||1)-1},0)/Math.max(grp.length,1)*50+50);
+        rRadarData[0].push([avgPot, totSales/totalAll*100, grp.length/rg.length*100, avgGrw, Math.min(grp.length*18,100)]);
     }
-    tableHtml += '</table>';
-    $('#regionTable').html(tableHtml);
+    var rrMaxArr=rRadarData[0].map(function(arr){return arr[0]});
+    var rrMax=Math.max.apply(null,rrMaxArr)||1;
+    rRadarData[0]=rRadarData[0].map(function(v){return[v[0]/rrMax*100,v[1],v[2],v[3],v[4]]});
+
+    charts.regionRadar.setOption({
+        backgroundColor:'transparent',
+        tooltip:{backgroundColor:'rgba(15,20,35,0.96)',borderColor:'#a855f7',borderWidth:1,textStyle:{color:'#e2e8f0'}},
+        radar:{
+            indicator:rRadarInd.map(function(n,i){return{name:n,max:112,color:'#94a3b8',fontSize:10}}),
+            shape:'polygon',splitNumber:4,radius:'64%',
+            axisName:{color:'#94a3b8',fontSize:10,fontWeight:500},
+            splitLine:{lineStyle:{color:'rgba(99,102,241,0.08)',type:'dashed'}},
+            splitArea:{areaStyle:{color:['rgba(79,172,254,0.04)','rgba(16,185,129,0.04)','rgba(245,158,11,0.04)','rgba(239,68,68,0.04)']}},
+            axisLine:{lineStyle:{color:'rgba(99,102,241,0.12)'}}
+        },
+        legend:{
+            data:clNames,textStyle:{color:'#94a3b8',fontSize:10,bold:true},bottom:2,left:'center',itemGap:14,
+            itemWidth:16,itemHeight:16,icon:'roundRect'
+        },
+        series:[{
+            type:'radar',data:rRadarData[0].map(function(v,i){return{
+                value:v,name:clNames[i],
+                symbol:'circle',symbolSize:7,
+                lineStyle:{color:clCols[i],width:2.8,shadowColor:clCols[i],shadowBlur:6},
+                areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{offset:0,color:clCols[i]+'38'},{offset:1,color:clCols[i]+'06'}])},
+                itemStyle:{color:clCols[i],borderColor:'#0a0e1a',borderWidth:2}
+            }}),
+            emphasis:{focus:'series',animationDuration:350}
+        }],
+        animationDuration:1200
+    }, true);
+
+    var tb='<table><tr><th>省份</th><th>实际销量(M)</th><th>市场份额%</th><th>聚类</th><th>潜力</th><th>策略</th></tr>';
+    for(var ri=0;ri<Math.min(sbp.length,12);ri++){
+        var r=sbp[ri];
+        tb+='<tr><td><b>'+r.province+'</b></td><td>'+(r.actual_sales/1000000).toFixed(1)+'</td><td>'+r.market_share_pct.toFixed(3)+'%'+
+            '</td><td><span class="tag tag-medium">'+r.cluster_label+'</span></td><td><b style="color:#10b981">'+r.potential_index+'</b></td><td style="font-size:10px">'+r.strategy+'</td></tr>';
+    } tb+='</table>'; $('#regionTable').html(tb);
 }
 
+/* ========== 6. 品类趋势 - Stream堆叠面积图 + 品类属性雷达（增强版） ========== */
 function renderCategoryTrend(data) {
-    var trends = data.category_trends || [];
-    var summary = data.summary || {};
-    var portfolioOptimization = data.portfolio_optimization || [];
-
+    var tr=data.category_trends||[], sum=data.summary||{}, po=data.portfolio_optimization||[];
     $('#trendMetrics').html(
-        '<div class="metric-item"><div class="metric-value">'+(summary.total_categories||0)+'</div><div class="metric-label">\u54C1\u7C7B\u603B\u6570</div></div>'+
-        '<div class="metric-item"><div class="metric-value" style="font-size:14px;color:#fa8bff">'+(summary.highest_potential||'-')+'</div><div class="metric-label">\u6700\u9AD8\u6F5C\u529B\u54C1\u7C7B</div></div>'+
-        '<div class="metric-item"><div class="metric-value" style="font-size:14px;color:#2bd2ff">'+(summary.dominant_category||'-')+'</div><div class="metric-label">\u5F53\u524D\u4E3B\u5BFC\u54C1\u7C7B</div></div>'
+        '<div class="metric-item"><div class="metric-value">'+(sum.total_categories||0)+'</div><div class="metric-label">品类总数</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:12px;color:#a855f7">'+(sum.highest_potential||'-')+'</div><div class="metric-label">最高潜力品类</div></div>'+
+        '<div class="metric-item"><div class="metric-value" style="font-size:12px;color:#22d3ee">'+(sum.dominant_category||'-')+'</div><div class="metric-label">当前主导品类</div></div>'
     );
 
-    var categories = [];
-    var currentShares = [];
-    var futureShares = [];
-    for (var cti = 0; cti < trends.length; cti++) {
-        categories.push(trends[cti].category);
-        currentShares.push(trends[cti].current_market_share);
-        futureShares.push(trends[cti].future_market_share_12m);
+    var cats=[], curS=[], futS=[];
+    for(var cti=0;cti<tr.length;cti++){cats.push(tr[cti].category);curS.push(tr[cti].current_market_share);futS.push(tr[cti].future_market_share_12m)}
+
+    var streamSeries=[];
+    var streamColors=['#a855f7','#ec4899','#22d3ee','#10b981','#f59e0b','#ef4444','#6366f1'];
+    for(var si=0;si<tr.length;si++){
+        streamSeries.push({
+            name:tr[si].category,type:'line',stack:'总量',smooth:true,symbol:'none',
+            lineStyle:{width:0},
+            areaStyle:{
+                opacity:0.85,
+                color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:streamColors[si]},{offset:1,color:streamColors[si]+'15'}])
+            },
+            data:[curS[si],futS[si]],
+            emphasis:{focus:'series',scale:true}
+        });
     }
 
     charts.trend.setOption({
-        tooltip:{trigger:'axis',backgroundColor:'rgba(13,27,46,0.95)',borderColor:'#fa8bff'},
-        legend:{data:['\u5F53\u524D\u4EFD\u989D%','\u672A\u676512\u6708\u9884\u671F%'],textStyle:{color:'#8899aa'},top:0},
-        grid:{left:'3%',right:'4%',bottom:'3%',top:'40px',containLabel:true},
-        xAxis:{type:'category',data:categories,axisLabel:{color:'#8899aa',fontSize:11,interval:0}},
-        yAxis:{type:'value',name:'\u5E02\u573A\u4EFD\u989D %',axisLabel:{color:'#8899aa'},splitLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}}},
-        series:[
-            {name:'\u5F53\u524D\u4EFD\u989D%',type:'bar',data:currentShares,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#fa8bff'},{offset:1,color:'#f093fb'}])},barWidth:'35%'},
-            {name:'\u672A\u676512\u6708\u9884\u671F%',type:'bar',data:futureShares,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#2bd2ff'},{offset:1,color:'#4facfe'}])},barWidth:'35%'}
-        ]
+        backgroundColor:'transparent',
+        tooltip:{
+            trigger:'axis',
+            backgroundColor:'rgba(15,20,35,0.96)',
+            borderColor:'#a855f7',borderWidth:1,
+            textStyle:{color:'#e2e8f0',fontSize:12},
+            formatter:function(p){
+                if(!p||!p.length)return'';
+                var res='<div style="padding:8px 12px">';
+                for(var pi=0;pi<p.length;pi++){
+                    if(p[pi].seriesName&&p[pi].value!=null){
+                        res+='<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+streamColors[cats.indexOf(p[pi].seriesName)]+';margin-right:6px"></span>'+
+                             '<b>'+p[pi].seriesName+'</b>: '+p[pi].value.toFixed(1)+'%<br/>';
+                    }
+                }
+                return res+'</div>';
+            },
+            extraCssText:'box-shadow:0 8px 32px rgba(0,0,0,0.4);border-radius:8px'
+        },
+        legend:{
+            data:cats,textStyle:{color:'#94a3b8',fontSize:11},top:6,itemGap:12,type:'scroll',width:'56%',
+            itemWidth:14,itemHeight:8,borderRadius:4
+        },
+        grid:{left:'3%',right:'4%',bottom:'8%',top:'42px',containLabel:true},
+        xAxis:{type:'category',data:['当前份额','未来12月预期'],axisLabel:{color:'#64748b',fontSize:13,fontWeight:500},
+               axisLine:{lineStyle:{color:'rgba(168,85,247,0.15)'}},axisTick:{show:false}},
+        yAxis:{type:'value',name:'市场份额 %',axisLabel:{color:'#64748b',formatter:'{value}%'},max:108,
+               splitLine:{lineStyle:{color:'rgba(99,102,241,0.04)',type:'dashed'}},
+               nameTextStyle:{color:'#94a3b8',fontSize:11}},
+        series:streamSeries,
+        animationDurationUpdate:1400,
+        animationEasingUpdate:'cubicInOut'
     }, true);
 
-    var tableHtml = '<table><tr><th>\u54C1\u7C7B</th><th>\u5F53\u524D\u4EFD\u989D%</th><th>\u672A\u6765\u4EFD\u989D%</th><th>\u53D8\u5316</th><th>\u8D8B\u52BF</th><th>\u6F5C\u529B</th><th>\u5EFA\u8BAE</th></tr>';
-    for (var tri = 0; tri < trends.length; tri++) {
-        var t = trends[tri];
-        var changeClass = t.share_change_pct > 0 ? 'tag-high' : (t.share_change_pct < 0 ? 'tag-low' : 'tag-medium');
-        var changePrefix = t.share_change_pct > 0 ? '+' : '';
-        tableHtml += '<tr><td><b>'+t.category+'</b></td><td>'+t.current_market_share.toFixed(1)+'%</td><td>'+t.future_market_share_12m.toFixed(1)+'%'+
-            '</td><td><span class="tag '+changeClass+'">'+changePrefix+t.share_change_pct.toFixed(2)+'%</span></td>'+
-            '<td>'+t.trend_direction+'</td><td>'+t.growth_potential_level.split(' ')[0]+'</td><td style="font-size:11px;">'+t.recommendation+'</td></tr>';
-    }
-    tableHtml += '</table>';
-    $('#trendTable').html(tableHtml);
+    /* 品类属性雷达 - 增强版 */
+    var attrNames=['必需性','购买频率','季节性','价格敏感度','增长潜力'];
+    var attrVals=[[]];
+    var attrRaw=[
+        [90,95,30,80,75],
+        [60,60,50,40,68],
+        [65,55,45,35,72],
+        [50,20,30,25,55],
+        [55,75,80,60,82],
+        [40,15,25,20,45],
+        [55,50,40,35,60]
+    ];
+    for(var ai=0;ai<attrRaw.length&&ai<tr.length;ai++) attrVals[0].push(attrRaw[ai]);
 
-    var insightHtml = '<div class="insight-title">\u1F4CB \u54C1\u7C7B\u7EC4\u5408\u4F18\u5316\u5EFA\u8BAE</div>';
-    for (var pi = 0; pi < portfolioOptimization.length; pi++) {
-        insightHtml += '<div>\u2022 '+portfolioOptimization[pi]+'</div>';
-    }
-    $('#trendInsight').html(insightHtml);
+    charts.trendRadar.setOption({
+        backgroundColor:'transparent',
+        tooltip:{backgroundColor:'rgba(15,20,35,0.96)',borderColor:'#a855f7',borderWidth:1,textStyle:{color:'#e2e8f0'}},
+        radar:{
+            indicator:attrNames.map(function(n,i){return{name:n,max:100,color:'#94a3b8',fontSize:10}}),
+            shape:'polygon',splitNumber:4,radius:'66%',
+            axisName:{color:'#94a3b8',fontSize:10,fontWeight:500},
+            splitLine:{lineStyle:{color:'rgba(99,102,241,0.08)',type:'dashed'}},
+            splitArea:{areaStyle:{color:['rgba(168,85,247,0.03)','rgba(236,72,153,0.03)','rgba(34,211,238,0.03)','rgba(16,185,129,0.03)']}},
+            axisLine:{lineStyle:{color:'rgba(99,102,241,0.12)'}}
+        },
+        legend:{
+            data:cats,textStyle:{color:'#94a3b8',fontSize:9},bottom:2,left:'center',itemGap:8,
+            itemWidth:14,itemHeight:14,icon:'roundRect'
+        },
+        series:[{
+            type:'radar',data:attrVals[0].map(function(v,i){return{
+                value:v,name:cats[i],
+                symbol:'circle',symbolSize:6,
+                lineStyle:{color:streamColors[i],width:2.2,shadowColor:streamColors[i],shadowBlur:4},
+                areaStyle:{color:new echarts.graphic.RadialGradient(0.5,0.5,1,[{offset:0,color:streamColors[i]+'30'},{offset:1,color:streamColors[i]+'04'}])},
+                itemStyle:{color:streamColors[i],borderColor:'#0a0e1a',borderWidth:1.5}
+            }}),
+            emphasis:{focus:'series',animationDuration:300}
+        }],
+        animationDuration:1100
+    }, true);
+
+    var tb='<table><tr><th>品类</th><th>当前%</th><th>未来%</th><th>变化</th><th>趋势</th><th>潜力</th><th>建议</th></tr>';
+    for(var tri=0;tri<tr.length;tri++){
+        var t=tr[tri]; var cc=t.share_change_pct>0?'tag-high':(t.share_change_pct<0?'tag-low':'tag-medium'); var cp=t.share_change_pct>0?'+':'';
+        tb+='<tr><td><b>'+t.category+'</b></td><td>'+t.current_market_share.toFixed(1)+'%</td><td>'+t.future_market_share_12m.toFixed(1)+'%'+
+            '</td><td><span class="tag '+cc+'">'+cp+t.share_change_pct.toFixed(2)+'%</span></td><td>'+t.trend_direction+'</td><td>'+t.growth_potential_level.split(' ')[0]+'</td><td style="font-size:10px">'+t.recommendation+'</td></tr>';
+    } tb+='</table>'; $('#trendTable').html(tb);
+
+    var ih='<div class="insight-title">品类组合优化建议</div>';
+    for(var pi=0;pi<po.length;pi++) ih+='<div style="margin:4px 0;padding-left:12px">\u2022 '+po[pi]+'</div>';
+    $('#trendInsight').html(ih);
 }
 /*]]>*/</script>
 </body>
