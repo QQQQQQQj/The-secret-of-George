@@ -49,79 +49,79 @@ public class ShiroConfig
     /**
      * Session超时时间，单位为毫秒（默认30分钟）
      */
-    @Value("${shiro.session.expireTime}")
+    @Value("${shiro.session.expireTime:30}")
     private int expireTime;
 
     /**
      * 相隔多久检查一次session的有效性，单位毫秒，默认就是10分钟
      */
-    @Value("${shiro.session.validationInterval}")
+    @Value("${shiro.session.validationInterval:10}")
     private int validationInterval;
 
     /**
      * 同一个用户最大会话数
      */
-    @Value("${shiro.session.maxSession}")
+    @Value("${shiro.session.maxSession:-1}")
     private int maxSession;
 
     /**
      * 踢出之前登录的/之后登录的用户，默认踢出之前登录的用户
      */
-    @Value("${shiro.session.kickoutAfter}")
+    @Value("${shiro.session.kickoutAfter:false}")
     private boolean kickoutAfter;
 
     /**
      * 验证码开关
      */
-    @Value("${shiro.user.captchaEnabled}")
+    @Value("${shiro.user.captchaEnabled:false}")
     private boolean captchaEnabled;
 
     /**
      * 验证码类型
      */
-    @Value("${shiro.user.captchaType}")
+    @Value("${shiro.user.captchaType:math}")
     private String captchaType;
 
     /**
      * 设置Cookie的域名
      */
-    @Value("${shiro.cookie.domain}")
+    @Value("${shiro.cookie.domain:}")
     private String domain;
 
     /**
      * 设置cookie的有效访问路径
      */
-    @Value("${shiro.cookie.path}")
+    @Value("${shiro.cookie.path:/}")
     private String path;
 
     /**
      * 设置HttpOnly属性
      */
-    @Value("${shiro.cookie.httpOnly}")
+    @Value("${shiro.cookie.httpOnly:true}")
     private boolean httpOnly;
 
     /**
      * 设置Cookie的过期时间，秒为单位
      */
-    @Value("${shiro.cookie.maxAge}")
+    @Value("${shiro.cookie.maxAge:30}")
     private int maxAge;
 
     /**
      * 设置cipherKey密钥
      */
-    @Value("${shiro.cookie.cipherKey}")
+    @Value("${shiro.cookie.cipherKey:}")
     private String cipherKey;
 
     /**
      * 登录地址
      */
-    @Value("${shiro.user.loginUrl}")
+    @Value("${shiro.user.loginUrl:/login}")
     private String loginUrl;
 
     /**
      * 权限认证失败地址
      */
-    @Value("${shiro.user.unauthorizedUrl}")
+    @Value("${shiro.user.unauthorizedUrl:/unauth}")
     private String unauthorizedUrl;
 
     /**

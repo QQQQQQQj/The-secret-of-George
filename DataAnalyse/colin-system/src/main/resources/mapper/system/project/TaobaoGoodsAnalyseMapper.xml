@@ -83,4 +83,8 @@
         ORDER BY gmv DESC
         limit 30
     </select>
+
+    <select id="executeRawSql" resultType="com.alibaba.fastjson.JSONObject">
+        ${sql}
+    </select>
 </mapper>

@@ -1,0 +1,554 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鏁版嵁鍒嗘瀽涓庡簲鐢ㄦ祴璇曚腑蹇?/title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/css/font-awesome.min.css" rel="stylesheet"/>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-card: rgba(30,41,59,0.95);
+            --bg-card-hover: rgba(38,50,70,0.98);
+            --border-subtle: rgba(99,102,241,0.15);
+            --border-active: rgba(99,102,241,0.5);
+            --accent-blue: #6366f1;
+            --accent-cyan: #22d3ee;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        
+        *{margin:0;padding:0;box-sizing:border-box}
+        
+        body{
+            background:var(--bg-primary);
+            color:var(--text-primary);
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;
+            min-height:100vh;
+            opacity:1 !important;
+            transition:none !important
+        }
+        
+        .header{
+            padding:32px 40px 24px;
+            text-align:center;
+            background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);
+            border-bottom:1px solid var(--border-subtle)
+        }
+        
+        .header h1{
+            font-size:28px;
+            font-weight:700;
+            background:linear-gradient(135deg,#fff 0%,#c7d2fe 50%,#22d3ee 100%);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            margin-bottom:10px;
+            letter-spacing:1px
+        }
+        
+        .header p{
+            font-size:13px;
+            color:var(--text-muted);
+            letter-spacing:0.5px
+        }
+        
+        .toolbar{
+            display:flex;
+            justify-content:center;
+            gap:12px;
+            margin:20px 32px;
+            flex-wrap:wrap;
+            padding:16px;
+            background:rgba(15,23,42,0.6);
+            border-radius:12px;
+            border:1px solid var(--border-subtle)
+        }
+        
+        .btn-test{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:12px 24px;
+            border:1px solid var(--border-subtle);
+            border-radius:10px;
+            cursor:pointer;
+            font-size:13px;
+            font-weight:600;
+            color:var(--text-secondary);
+            background:var(--bg-card);
+            transition:all 0.25s ease;
+            font-family:inherit;
+            position:relative;
+            overflow:hidden
+        }
+        
+        .btn-test::before{
+            content:'';
+            position:absolute;
+            top:0;left:-100%;
+            width:100%;height:100%;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);
+            transition:left 0.5s
+        }
+        
+        .btn-test:hover::before{left:100%}
+        
+        .btn-test:hover{
+            border-color:var(--border-active);
+            transform:translateY(-2px);
+            box-shadow:0 8px 25px rgba(99,102,241,0.25);
+            color:#fff
+        }
+        
+        .btn-test.primary{
+            border-color:var(--accent-blue);
+            color:#fff;
+            background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(34,211,238,0.15));
+            box-shadow:0 4px 20px rgba(99,102,241,0.2)
+        }
+        
+        .btn-test.success{
+            border-color:var(--accent-green);
+            color:var(--accent-green)
+        }
+        
+        .btn-test.danger{
+            border-color:var(--accent-red);
+            color:var(--accent-red)
+        }
+        
+        .btn-test:disabled{
+            opacity:0.5;cursor:not-allowed;transform:none!important
+        }
+        
+        .dashboard{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:18px;
+            padding:20px 32px 40px;
+            max-width:1700px;
+            margin:0 auto
+        }
+        
+        .card{
+            background:var(--bg-card);
+            border:1px solid var(--border-subtle);
+            border-radius:16px;
+            padding:22px;
+            transition:all 0.3s ease;
+            position:relative;
+            overflow:hidden
+        }
+        
+        .card:hover{
+            border-color:var(--border-active);
+            transform:translateY(-3px);
+            box-shadow:0 12px 35px rgba(0,0,0,0.4),0 0 0 1px rgba(99,102,241,0.1)
+        }
+        
+        .card-title{
+            font-size:14px;
+            font-weight:600;
+            margin-bottom:16px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            color:var(--text-primary);
+            letter-spacing:0.3px
+        }
+        
+        .card-title .icon{
+            width:36px;height:36px;
+            display:flex;align-items:center;justify-content:center;
+            border-radius:10px;font-size:16px
+        }
+        
+        .icon-blue{background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(99,102,241,0.08));border:1px solid rgba(99,102,241,0.2)}
+        .icon-green{background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(16,185,129,0.08));border:1px solid rgba(16,185,129,0.2)}
+        .icon-purple{background:linear-gradient(135deg,rgba(168,85,247,0.25),rgba(168,85,247,0.08));border:1px solid rgba(168,85,247,0.2)}
+        .icon-orange{background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(245,158,11,0.08));border:1px solid rgba(245,158,11,0.2)}
+        .col-span-3{grid-column:span 3}
+        .col-span-2{grid-column:span 2}
+
+        .chart-container{width:100%}
+        .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+        .info-item{
+            background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(99,102,241,0.02));
+            border:1px solid rgba(99,102,241,0.1);
+            border-radius:12px;
+            padding:16px;
+            transition:all 0.2s
+        }
+        .info-item:hover{transform:translateY(-2px);border-color:rgba(99,102,241,0.25);box-shadow:0 4px 15px rgba(99,102,241,0.1)}
+        .info-label{font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+        .info-value{font-size:17px;font-weight:700;color:var(--accent-cyan)}
+
+        .status-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:6px 16px;
+            border-radius:20px;
+            font-size:12px;
+            font-weight:700
+        }
+        .status-success{background:rgba(16,185,129,0.15);color:var(--accent-green);border:1px solid rgba(16,185,129,0.35)}
+        .status-error{background:rgba(239,68,68,0.15);color:var(--accent-red);border:1px solid rgba(239,68,68,0.35)}
+        .status-warning{background:rgba(245,158,11,0.15);color:var(--accent-orange);border:1px solid rgba(245,158,11,0.35)}
+        .status-dot{width:8px;height:8px;border-radius:50%}
+        .dot-green{background:var(--accent-green);box-shadow:0 0 10px var(--accent-green)}
+        .dot-red{background:var(--accent-red);box-shadow:0 0 10px var(--accent-red)}
+        .dot-yellow{background:var(--accent-orange);box-shadow:0 0 10px var(--accent-orange)}
+
+        .test-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:14px}
+        .test-table th{
+            background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(99,102,241,0.04));
+            padding:12px 14px;
+            text-align:left;
+            color:var(--text-secondary);
+            font-weight:700;
+            font-size:10px;
+            text-transform:uppercase;
+            letter-spacing:1px;
+            border-bottom:1px solid rgba(99,102,241,0.15)
+        }
+        .test-table td{padding:11px 14px;border-bottom:1px solid rgba(99,102,241,0.06);color:var(--text-secondary)}
+        .test-table tr:hover td{background:rgba(99,102,241,0.06)}
+
+        .loading-overlay{
+            position:absolute;top:0;left:0;right:0;bottom:0;
+            background:rgba(15,23,42,0.85);
+            backdrop-filter:blur(4px);
+            display:none;
+            justify-content:center;
+            align-items:center;
+            z-index:100;
+            border-radius:16px
+        }
+        
+        .spinner{
+            width:44px;height:44px;
+            border:3px solid rgba(99,102,241,0.2);
+            border-top-color:var(--accent-blue);
+            border-radius:50%;
+            animation:spin 0.8s linear infinite
+        }
+        
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        .log-container{
+            max-height:280px;overflow-y:auto;
+            background:rgba(15,23,42,0.6);
+            border-radius:10px;
+            padding:14px;
+            font-family:'Cascadia Code','Courier New',monospace;
+            font-size:11px;
+            line-height:1.7;
+            margin-top:14px;
+            border:1px solid rgba(99,102,241,0.08)
+        }
+        
+        .log-entry{padding:3px 0;border-bottom:1px solid rgba(99,102,241,0.04)}
+        .log-time{color:var(--text-muted);margin-right:10px;font-family:monospace}
+        .log-info{color:var(--accent-blue)}
+        .log-success{color:var(--accent-green)}
+        .log-error{color:var(--accent-red)}
+        .log-warn{color:var(--accent-orange)}
+
+        .metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+        .metric-item{
+            background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(99,102,241,0.02));
+            border:1px solid rgba(99,102,241,0.1);
+            border-radius:14px;
+            padding:18px 12px;
+            text-align:center;
+            transition:all 0.25s
+        }
+        .metric-item:hover{transform:scale(1.03);border-color:rgba(99,102,241,0.25)}
+        .metric-value{font-size:26px;font-weight:800;color:var(--accent-cyan)}
+        .metric-label{font-size:10px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600}
+
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+        .card{animation:fadeInUp 0.45s ease-out backwards}
+        .card:nth-child(1){animation-delay:0.02s}.card:nth-child(2){animation-delay:0.06s}
+        .card:nth-child(3){animation-delay:0.10s}.card:nth-child(4){animation-delay:0.14s}
+        .card:nth-child(5){animation-delay:0.18s}.card:nth-child(6){animation-delay:0.22s}
+        .card:nth-child(7){animation-delay:0.26s}
+        
+        .detail-panel{
+            background:rgba(15,23,42,0.5);
+            border:1px solid rgba(99,102,241,0.1);
+            border-radius:10px;
+            padding:14px;
+            margin-top:14px;
+            font-size:12px
+        }
+        
+        .detail-row{
+            display:flex;
+            justify-content:space-between;
+            padding:6px 0;
+            border-bottom:1px solid rgba(99,102,241,0.05)
+        }
+        
+        .detail-label{color:var(--text-muted)}
+        .detail-value{color:var(--accent-cyan);font-weight:600}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>鏁版嵁鍒嗘瀽涓庡簲鐢ㄦ祴璇曚腑蹇?/h1>
+    <p>绯荤粺鐜妫€娴?路 API鎺ュ彛娴嬭瘯 路 鎬ц兘鍩哄噯娴嬭瘯 路 鏁版嵁瀹屾暣鎬ч獙璇?路 鑷姩鍖栨姤鍛婄敓鎴?/p>
+</div>
+
+<div class="toolbar">
+    <button class="btn-test primary" onclick="runFullTestSuite()" id="btnFullTest">
+        <i class="fa fa-play-circle"></i> 杩愯瀹屾暣娴嬭瘯濂椾欢
+    </button>
+    <button class="btn-test success" onclick="quickHealthCheck()" id="btnQuickCheck">
+        <i class="fa fa-heartbeat"></i> 蹇€熷仴搴锋鏌?    </button>
+    <button class="btn-test" onclick="loadEnvironmentInfo()" id="btnEnvInfo">
+        <i class="fa fa-server"></i> 鐜淇℃伅妫€娴?    </button>
+    <button class="btn-test" onclick="testDatabase()" id="btnDbTest">
+        <i class="fa fa-database"></i> 鏁版嵁搴撹繛鎺ユ祴璇?    </button>
+    <button class="btn-test" onclick="testMLService()" id="btnMlTest">
+        <i class="fa fa-brain"></i> ML鏈嶅姟鍋ュ悍妫€鏌?    </button>
+    <button class="btn-test danger" onclick="generateReport()" id="btnReport">
+        <i class="fa fa-file-text-o"></i> 鐢熸垚缁煎悎鎶ュ憡
+    </button>
+</div>
+
+<div class="dashboard" id="dashboard">
+
+    <!-- 1. 绯荤粺鐘舵€佹€昏 -->
+    <div class="card col-span-3" id="overviewCard">
+        <div class="card-title"><span class="icon icon-blue">馃搳</span>绯荤粺鐘舵€佹€昏<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">瀹炴椂鐩戞帶闈㈡澘</span></div>
+        <div class="metrics-row" id="overviewMetrics">
+            <div class="metric-item"><div class="metric-value" id="totalTests">--</div><div class="metric-label">鎬绘祴璇曟暟</div></div>
+            <div class="metric-item"><div class="metric-value" style="color:var(--accent-green)" id="passedTests">--</div><div class="metric-label">閫氳繃娴嬭瘯</div></div>
+            <div class="metric-item"><div class="metric-value" style="color:var(--accent-red)" id="failedTests">--</div><div class="metric-label">澶辫触娴嬭瘯</div></div>
+            <div class="metric-item"><div class="metric-value" id="passRate">--%</div><div class="metric-label">閫氳繃鐜?/div></div>
+            <div class="metric-item"><div class="metric-value" style="color:var(--accent-cyan)" id="avgResponseTime">--</div><div class="metric-label">骞冲潎鍝嶅簲</div></div>
+            <div class="metric-item"><div class="metric-value" id="lastRunTime">--:--</div><div class="metric-label">涓婃杩愯</div></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:16px">
+            <div class="chart-container" id="overviewChart" style="flex:1;height:320px;"></div>
+            <div class="chart-container" id="gaugeChart" style="width:280px;height:320px;"></div>
+        </div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 2. 鐜淇℃伅 -->
+    <div class="card col-span-3" id="envCard">
+        <div class="card-title"><span class="icon icon-green">馃枼锔?/span>娴嬭瘯鐜淇℃伅<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">绯荤粺 / JVM / 搴旂敤閰嶇疆璇︽儏</span></div>
+        <div class="info-grid" id="envInfoGrid"></div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 3. 鏁版嵁搴撹繛鎺ユ祴璇?-->
+    <div class="card col-span-2" id="dbCard">
+        <div class="card-title"><span class="icon icon-purple">馃梽锔?/span>鏁版嵁搴撹繛鎺ユ祴璇?span style="margin-left:auto;font-size:10px;color:var(--text-muted)">MySQL 杩炴帴涓庢煡璇㈡€ц兘妫€娴?/span></div>
+        <div style="overflow-x:auto;max-height:380px;overflow-y:auto;">
+            <table class="test-table" id="dbTestTable">
+                <thead><tr><th>娴嬭瘯椤?/th><th>鐘舵€?/th><th>缁撴灉鏁版嵁</th><th>鍝嶅簲鏃堕棿</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 4. ML鏈嶅姟鐘舵€?-->
+    <div class="card" id="mlCard">
+        <div class="card-title"><span class="icon icon-orange">馃</span>ML鏈嶅姟鐘舵€?span style="margin-left:auto;font-size:10px;color:var(--text-muted)">FastAPI 棰勬祴绔偣鐩戞帶</span></div>
+        <div id="mlStatusBadge" style="margin-bottom:14px;text-align:center;">
+            <span class="status-badge status-warning"><span class="status-dot dot-yellow"></span>绛夊緟妫€娴?/span>
+        </div>
+        <div style="overflow-x:auto;max-height:340px;overflow-y:auto;">
+            <table class="test-table" id="mlTestTable">
+                <thead><tr><th>棰勬祴绔偣</th><th>鐘舵€?/th><th>鎵ц鑰楁椂</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 5. API鎬ц兘鍩哄噯娴嬭瘯 -->
+    <div class="card col-span-3" id="perfCard">
+        <div class="card-title"><span class="icon icon-blue">鈿?/span>API鎬ц兘鍩哄噯鍒嗘瀽<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">鍝嶅簲鏃堕棿鍒嗗竷 / 寤惰繜鐧惧垎浣?/ 鍚炲悙閲忕粺璁?/span></div>
+        <div style="display:flex;gap:16px;">
+            <div class="chart-container" id="perfChart" style="flex:1.6;height:360px;"></div>
+            <div class="chart-container" id="throughputChart" style="flex:1;height:360px;"></div>
+        </div>
+        <div class="detail-panel" id="perfDetailPanel" style="display:none">
+            <div class="detail-row"><span class="detail-label">骞冲潎鍝嶅簲鏃堕棿 (Avg)</span><span class="detail-value" id="detailAvgTime">-</span></div>
+            <div class="detail-row"><span class="detail-label">涓綅鏁板欢杩?(P50)</span><span class="detail-value" id="detailP50">-</span></div>
+            <div class="detail-row"><span class="detail-label">95%鍒嗕綅寤惰繜 (P95)</span><span class="detail-value" id="detailP95">-</span></div>
+            <div class="detail-row"><span class="detail-label">99%鍒嗕綅寤惰繜 (P99)</span><span class="detail-value" id="detailP99">-</span></div>
+            <div class="detail-row"><span class="detail-label">鏈€澶у搷搴旀椂闂?(Max)</span><span class="detail-value" id="detailMaxTime">-</span></div>
+            <div class="detail-row"><span class="detail-label">鍚炲悙閲?(Throughput)</span><span class="detail-value" id="detailThroughput">-</span></div>
+        </div>
+        <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 6. 娴嬭瘯鏃ュ織 -->
+    <div class="card col-span-3" id="logCard">
+        <div class="card-title"><span class="icon icon-green">馃摑</span>瀹炴椂鎿嶄綔鏃ュ織<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">娴嬭瘯鎵ц璁板綍涓庨敊璇拷韪?/span></div>
+        <div class="log-container" id="logContainer">
+            <div class="log-entry"><span class="log-time">[--:--:--]</span><span class="log-info">[SYSTEM] 娴嬭瘯涓績鍒濆鍖栧畬鎴愶紝绛夊緟鎵ц娴嬭瘯...</div>
+        </div>
+    </div>
+
+    <!-- 7. 娴嬭瘯閰嶇疆 -->
+    <div class="card col-span-3" id="configCard">
+        <div class="card-title"><span class="icon icon-purple">鈿欙笍</span>娴嬭瘯閰嶇疆鍙傛暟<span style="margin-left:auto;font-size:10px;color:var(--text-muted)">鑷畾涔夋祴璇曟墽琛岄€夐」</span></div>
+        <div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;padding:12px 0;">
+            <label style="font-size:13px;color:var(--text-secondary);">
+                <strong>杩唬娆℃暟:</strong>
+                <input type="number" id="iterations" value="3" min="1" max="10" style="width:64px;padding:6px 10px;border:1px solid var(--border-subtle);border-radius:8px;background:rgba(15,23,42,0.6);color:var(--text-primary);margin-left:8px;font-weight:600">
+            </label>
+            <label style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="includeDb" checked style="width:16px;height:16px;cursor:pointer"> 鍖呭惈鏁版嵁搴撴祴璇?            </label>
+            <label style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="includeMl" checked style="width:16px;height:16px;cursor:pointer"> 鍖呭惈ML鏈嶅姟娴嬭瘯
+            </label>
+            <label style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="verboseLog" checked style="width:16px;height:16px;cursor:pointer"> 璇︾粏鏃ュ織杈撳嚭
+            </label>
+        </div>
+    </div>
+</div>
+
+<script>/*<![CDATA[*/
+var ctx = "\/";
+/*]]>*/</script>
+<script src="/js/jquery.min.js?v=3.6.0"></script>
+<script src="/ajax/libs/layer/layer.min.js?v=3.5.1"></script>
+<script src="/ajax/libs/report/echarts/echarts-all.min-new.js?v=5.4.2"></script>
+<script>/*<![CDATA[*/
+var prefix = ctx + "project/testReport";
+var charts = {};
+var testLogs = [];
+var isRunning = false;
+
+console.log('[TestReport] Initializing... prefix:', prefix);
+
+function addLog(type, msg) {
+    try {
+        var time = new Date().toLocaleTimeString();
+        var colorClass = 'log-info';
+        if(type === 'success') colorClass = 'log-success';
+        else if(type === 'error') colorClass = 'log-error';
+        else if(type === 'warn') colorClass = 'log-warn';
+
+        var icons = {success:'[OK]',error:'[FAIL]',warn:'[WARN]',info:'[INFO]'};
+        var icon = icons[type] || '[INFO]';
+
+        testLogs.push({time: time, type: type, icon: icon, msg: msg});
+        if(testLogs.length > 150) testLogs.shift();
+
+        var logHtml = '<div class="log-entry"><span class="log-time">' + time + '</span> <span class="' + colorClass + '">' + icon + ' [' + type.toUpperCase() + '] ' + msg + '</span></div>';
+        var $logContainer = $('#logContainer');
+        if($logContainer.length) {
+            $logContainer.prepend(logHtml);
+            if($logContainer.children().length > 80) $logContainer.children().last().remove();
+        }
+    } catch(e) {
+        console.error('[addLog] Error:', e);
+    }
+}
+
+function showLoading(cardId, show) {
+    if(show) {
+        $('#' + cardId).find('.loading-overlay').css('display', 'flex');
+    } else {
+        $('#' + cardId).find('.loading-overlay').hide();
+    }
+}
+
+function setButtonLoading(btnId, loading) {
+    var btn = $('#' + btnId);
+    if(loading) {
+        btn.prop('disabled', true);
+        btn.find('i').removeClass().addClass('fa fa-spinner fa-spin');
+    } else {
+        btn.prop('disabled', false);
+        var onclickStr = btn.attr('onclick') || '';
+        var matchResult = onclickStr.match(/(\w+)\(\)/);
+        var funcName = matchResult ? matchResult[1] : '';
+        var iconMap = {'runFullTestSuite':'fa-play-circle','quickHealthCheck':'fa-heartbeat','loadEnvironmentInfo':'fa-server','testDatabase':'fa-database','testMLService':'fa-brain','generateReport':'fa-file-text-o'};
+        btn.find('i').removeClass().addClass('fa ' + (iconMap[funcName] || 'fa-check'));
+    }
+}
+
+$(document).ready(function() {
+    console.log('[TestReport] Document ready, initializing...');
+    try {
+        initCharts();
+        addLog('info', '娴嬭瘯涓績鍒濆鍖栧畬鎴?);
+        addLog('info', '鎻愮ず: 鐐瑰嚮涓嬫柟鎸夐挳寮€濮嬫祴璇曪紙涓嶄細鑷姩鍔犺浇鏁版嵁锛?);
+    } catch(e) {
+        console.error('[TestReport] Initialization error:', e);
+        addLog('error', '鍒濆鍖栧け璐? ' + e.message);
+    }
+});
+
+function initCharts() {
+    console.log('[TestReport] Initializing charts...');
+    try {
+        if(typeof echarts === 'undefined') {
+            console.error('[TestReport] ECharts not loaded!');
+            addLog('error', 'ECharts搴撴湭鍔犺浇锛屽浘琛ㄥ姛鑳戒笉鍙敤');
+            return;
+        }
+
+        var overviewEl = document.getElementById('overviewChart');
+        var gaugeEl = document.getElementById('gaugeChart');
+        var perfEl = document.getElementById('perfChart');
+        var throughputEl = document.getElementById('throughputChart');
+
+        if(overviewEl) charts.overview = echarts.init(overviewEl);
+        if(gaugeEl) charts.gauge = echarts.init(gaugeEl);
+        if(perfEl) charts.perf = echarts.init(perfEl);
+        if(throughputEl) charts.throughput = echarts.init(throughputEl);
+
+        window.addEventListener('resize', function() {
+            Object.values(charts).forEach(function(chart) {
+                if(chart && typeof chart.resize === 'function') chart.resize();
+            });
+        });
+
+        renderEmptyCharts();
+        console.log('[TestReport] Charts initialized successfully');
+    } catch(e) {
+        console.error('[initCharts] Error:', e);
+        addLog('error', '鍥捐〃鍒濆鍖栧け璐? ' + e.message);
+    }
+}
+
+function renderEmptyCharts() {
+    try {
+        if(charts.overview) charts.overview.setOption({
+            title:{text:'绛夊緟娴嬭瘯鏁版嵁...',left:'center',top:'center',textStyle:{color:'#64748b',fontSize:14,fontWeight:400}},
+            xAxis:{show:false},yAxis:{show:false},series:[]
+        }, true);
+
+        if(charts.gauge) charts.gauge.setOption({
+            series:[{
+                type:'gauge',
+                startAngle:200,
+                endAngle:-20,
+                min:0,
+                max:100,
+                radius:'90%',
+                center:['50%','55%'],
+                splitNumber:10,
+                axisLine:{lineStyle:{width:12,color:

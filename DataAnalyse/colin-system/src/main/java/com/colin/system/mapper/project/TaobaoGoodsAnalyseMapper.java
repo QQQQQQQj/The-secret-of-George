@@ -28,4 +28,6 @@ public interface TaobaoGoodsAnalyseMapper {
 
     List<JSONObject> cityGmv();
 
+    List<JSONObject> executeRawSql(@Param("sql") String sql);
+
 }
